@@ -1,0 +1,1133 @@
+/******** ray_trace.c ********/
+/* Timothy Ellsworth Bowers
+   13 October 2009
+
+   This is the Ray-Trace project for ASTR 5760 (Instrumentation).  This
+   project comes in three parts:
+
+   A - Due Thursday, September 10, 2009
+       Ray Trace a simple cassegrain (primary: 1-m f/3, confocal secondary,
+       system f/20, with on-axis focus 100 mm behind primary vertex) at
+       various incident angles.
+
+   B - Due Thursday, September 24, 2009
+       Add a Rowland circle spectrograph.  Grating: 3600 l/mm, R_c = 2000 mm,
+       R=20,000 at 1500A.  Do ray-trace of system every 100A from 1200A - 
+       2000A, assuming a matched cylindrical detector.
+
+   C - Due Tueesday, October 13, 2009
+       Make grating toroidal to account for the astagmatism (R_c in spectral
+       dimension is unchanged.  Choose toroid carefully, and ray-trace same
+       lambdas as part B.
+
+   ---------------------------
+   
+   The program accepts the following command-line input:
+
+   -v, --verbose      Be verbose in the output
+   -w, --where        Print which optical surface we're at
+   
+   --usegrid          Start rays on a regular grid instead of random locations
+   --single           Use a single ray straight down the optical axis
+   
+   --angle=ANGLE      Off-boresight angle of starting light IN ARCSEC (default
+                      value: 0.0).
+   --lambda=WAVELEN   Wavelength of the light ray IN ANGSTROMS (default: 1500A)
+
+   --print_primary    Print out ray positions upon contact with the primary
+   --print_secondary  Print out ray positions upon contact with the secondary
+   --print_focalplane Print out ray positions upon contact with the focal plane
+   --print_grating    Print out ray positions upon contact with the grating
+   --print_detector   Print out ray positions upon contact with the detector
+
+   --ftest            Run a test of the telescope f/#
+   --stop_at_focus    Stop the ray trace at the focal plane
+   
+   ---------------------------
+   
+   Functions for this project are defined in the "ray_funcs.h" header
+   file.
+   
+   Other information:
+   
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <argtable2.h>                 // Includes the ARGTABLE routine defs
+#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
+#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+#include <mylib/fileio.h>              // Included file I/O shortcuts
+#include "ray_funcs.h"                 // Program-dependent defs
+
+void print_usage();                    // Delaration for print_usage() function
+
+int main(int argc, char *argv[]){
+  
+  /* Variable Declarations */
+  int i,j,k,n_rays=121*121;
+  double t,sec_rad[n_rays],delta;
+  char filename[50];
+  FILE *fpp;
+  raytrace_geom geom;
+  raytrace_ray *rays,normal,g,det_plane;
+  const gsl_rng_type *T;
+  gsl_rng *r;
+  
+  rays = (raytrace_ray *)malloc(n_rays * sizeof(raytrace_ray));
+  
+  /* Setup GSL's RNG */
+  gsl_rng_env_setup();
+  
+  T = gsl_rng_ranlux389;
+  r = gsl_rng_alloc(T);
+  
+    /* ARGTABLE SECTION -- EXTRA INDENT */
+    // Variables needed
+    int nerrors,be_verbose,iang,use_grid,do_foctest,stop_foc,single,be_where;
+    int pp,ps,pf,pg,pd;                  // Print outputs
+    double angle,wavelen;                // Angle in radians -- used in x dir
+    
+    // Build the ARGTABLE
+    struct arg_int *ang  = arg_int0(NULL,"angle","<arcsec>",
+				    "Off-axis light angle");
+    struct arg_dbl *lam  = arg_dbl0("l","lambda","<angstroms>",
+				    "Wavelength of light ray");
+    struct arg_lit *ver  = arg_lit0("v","vebose","verbose output");
+    struct arg_lit *where= arg_lit0("w","where","print where we're at");
+    struct arg_lit *grd  = arg_lit0(NULL,"usegrid","Use a regular grid");
+    struct arg_lit *st   = arg_lit0(NULL,"single",
+				    "test with a single, on-axis ray");
+    struct arg_lit *ft   = arg_lit0(NULL,"ftest",
+				    "Perform f/# test (angle is ignored)");
+    struct arg_lit *pri  = arg_lit0(NULL,"print_primary",
+				    "print ray positions at primary");
+    struct arg_lit *sec  = arg_lit0(NULL,"print_secondary",
+				    "print ray positions at secondary");
+    struct arg_lit *fp   = arg_lit0(NULL,"print_focalplane",
+				    "print ray positions at focal plane");
+    struct arg_lit *gr   = arg_lit0(NULL,"print_grating",
+				    "print ray positions at grating");
+    struct arg_lit *det  = arg_lit0(NULL,"print_detector",
+				    "print ray positions at detector");
+    struct arg_lit *sf   = arg_lit0(NULL,"stop_at_focus",
+				    "stop the ray trace at focal plane");
+    struct arg_lit *help = arg_lit0(NULL,"help","print this help");
+    struct arg_end *end  = arg_end(20);
+    void *argtable[] = {ang,lam,grd,pri,sec,fp,gr,det,ft,st,sf,where,ver,
+			help,end};
+    
+    /* Check for null arguments */
+    if (arg_nullcheck(argtable) != 0){
+      printf("error: insufficient memory\n");  
+      exit(1);
+    }
+    
+    /* Initialize command line flags to defaults */
+    ang->ival[0] = 0;                        // Incoming light angle  = 0
+    lam->dval[0] = 1500;                     // Default = 1500A
+    
+    /* Parse the command line */
+    nerrors = arg_parse(argc,argv,argtable);
+    
+    /* If help ---> */
+    if(help->count){
+      print_usage();
+      arg_print_syntaxv(stderr, argtable, "\n\n");
+      arg_print_glossary(stdout, argtable, " %-25s %s\n");  
+      exit(1);
+    }
+    
+    /* If any errors */
+    if(nerrors > 0){
+      arg_print_errors(stderr,end,"ray_trace");
+      arg_print_syntaxv(stderr, argtable, "\n");
+      exit(1);
+    }
+    
+    /* Put parsed command options into usual variables */
+    be_verbose = ver->count;
+    be_where   = where->count;
+    use_grid   = grd->count;
+    do_foctest = ft->count;
+    stop_foc   = sf->count;
+    single     = st->count;
+    pp         = pri->count;
+    ps         = sec->count;
+    pf         = fp->count;
+    pg         = gr->count;
+    pd         = det->count;
+    iang       = ang->ival[0];
+    angle      = (double)(iang) / 206265.;
+    wavelen    = lam->dval[0];
+    
+  
+  /* Define Gemetrical Parameters of the system -- EVERYTHING IN METERS */
+    
+  geom.f = 3.0;      // Focal length of primary
+  geom.b = 0.100;    // Back-plane distance (focal plane, behind primary vertex)
+  geom.v = 4.0;      // Distance of primary vertex from 'starting point' (arb)
+  
+  geom.Dp = 1.0;     // Primary Diameter
+  
+  geom.e = 23./17.;  // From focal-ratios: eps =  (final+pri)/(final-pri)
+  
+  geom.Ds = (geom.f + geom.b) * (geom.e - 1.) / 
+    (6. * geom.e);   // Secondary Diameter (on-axis)
+  
+  // Quantities related to the Rowland Circle Spectrograph
+  geom.Rrc = 2.0;    // Diamter of Rowland Circle = radius of grating curvature
+  geom.d   = 10000./3.6; // 3600 l/mm converted to angstroms per line
+  
+  //geom.alpha = asin(0.20);
+  //geom.alpha = asin(0.54); // Centering lambda=1500A at beta=0 angle (radians)
+  
+  /* Center the spectrum at 1600A */
+  geom.alpha = asin(0.576);// Centering lambda=1600A at beta=0 angle (radians)
+  
+  printf("Eccentricity: %.5f, Secondary Diameter: %.2f cm\n",
+	 geom.e,geom.Ds*100.);
+  
+  /* Build array of starting rays, including x & v */
+  
+  // Focal # test
+  if(do_foctest){
+    
+    // Reallocate space, if not enough was allocated in the first place
+    if(n_rays < 12)
+      rays = (raytrace_ray *)malloc(12 * sizeof(raytrace_ray));
+    
+    n_rays = 12;
+    for(i=0; i < n_rays; i++){
+      
+      rays[i].x = 0.5 * cos( (double)i * M_PI / 6.);
+      rays[i].y = 0.5 * sin( (double)i * M_PI / 6.);
+      rays[i].z = 0.;
+      
+      rays[i].vx = 0.;
+      rays[i].vy = 0.;
+      rays[i].vz = -1.0;
+      
+      rays[i].lost = 0;
+      rays[i].lambda = wavelen;
+      
+    }
+    // Single-ray test
+  }else if(single){
+    
+    n_rays = 1;
+    
+    rays[0].x = 0.0;
+    rays[0].y = 0.0;
+    rays[0].z = 0.0;
+    
+    rays[0].vx = 0.0;
+    rays[0].vy = 0.0;
+    rays[0].vz = -1.0;
+    
+    rays[0].lost = 0;
+    rays[0].lambda = wavelen;
+    
+    // Regular Grid
+  }else if(use_grid)
+    for(i=0; i<sqrt(n_rays); i++){
+      for(j=0; j<sqrt(n_rays); j++){
+	
+	k = (int)(i*sqrt(n_rays) + j);
+	/* Set positions */
+	rays[k].x = (double)i * 0.01 - 0.6;
+	rays[k].y = (double)j * 0.01 - 0.6;
+	// rays[i+j].y = +(0.1 * (double)(j+1)) * cos( (double)i * M_PI / 6.);
+	rays[k].z = +0.0;
+	
+	/* Set velocities */
+	rays[k].vx = sin(angle);
+	rays[k].vy = +0.0;
+	rays[k].vz = -cos(angle);
+	
+	/* The ray is not yet lost */
+	rays[k].lost = 0;
+	rays[k].lambda = wavelen;
+      }
+    }
+  // Random points
+  else
+    for(i=0; i< n_rays; i++){
+      rays[i].x = gsl_rng_uniform(r)*1.2 - 0.6;  // Random from [-0.6,0.6]
+      rays[i].y = gsl_rng_uniform(r)*1.2 - 0.6;  // Random from [-0.6,0.6]
+      rays[i].z = +0.0;
+      
+      /* Set velocities */
+      rays[i].vx = sin(angle);
+      rays[i].vy = +0.0;
+      rays[i].vz = -cos(angle);
+      
+      /* The ray is not yet lost */
+      rays[i].lost = 0;
+      rays[i].lambda = wavelen;
+    }
+  
+  /* If selected, open file for primary ray locations */
+  if(pp){
+    sprintf(filename,"rt_primary_ang%-d.dat",iang);
+    fpp = fileopenw(filename);
+  }
+  
+  
+  /* Loop over rays, from starting point to the primary mirror */
+  if(be_where)
+    printf("Rays headed towards the primary...\n");
+  for(i=0; i<n_rays; i++){
+    
+    /* Use GSL root-finder to caluclate t for each ray from start -> primary */
+    t = raytrace_free_distance(rays[i], geom, OPTIC_PRI);
+    
+    if(be_verbose)
+      printf("\nValue of t returned from function: %.5f m\n",t);
+    
+    /* Advance ray to primary */
+    raytrace_advance_ray(&rays[i],t);
+    
+    /* Check to see that ray actually hit the 1-m (diameter) primary */
+    if(hypot(rays[i].x, rays[i].y) > (0.5 + 1.e-10))  // To catch round-off err
+      rays[i].lost = 1;
+    
+    /* If selected, write out ray locations to file */
+    if(pp && !rays[i].lost)
+      fprintf(fpp,"%g\t%g\t%f\n",rays[i].x,rays[i].y,rays[i].z);
+    
+  } // End of loop: starting point to primary
+  
+  /* Close primary mirror file, if selected */
+  if(pp)
+    fclose(fpp);
+  
+
+  /* Loop over rays, find reflected v vector off primary */
+  for(i=0; i<n_rays; i++){
+    
+    /* Only do calculation for rays not lost */
+    if(!rays[i].lost){
+      
+      /* Find normal to the surface at reflection point */
+      normal = raytrace_get_n(rays[i], geom, OPTIC_PRI);
+      
+      if(be_verbose)
+	printf("\nNormal vector: [%.5f,%.5f,%.5f], 1-|n| = %.5e\n",normal.x,
+	       normal.y,normal.z,1.-gsl_hypot3(normal.x,normal.y,normal.z));
+      
+      /* Reflect rays -- update velocities */
+      raytrace_reflect(&rays[i],normal);
+    }    
+  } // End of loop: reflect off primary
+  
+  /* If selected, open file for secondary ray locations */
+  if(ps){
+    sprintf(filename,"rt_secondary_ang%-d.dat",iang);
+    fpp = fileopenw(filename);
+  }
+  
+  
+  /* Loop over rays, from primary to secondary mirror */
+  if(be_where)
+    printf("Rays headed towards the secondary...\n");
+  for(i=0; i<n_rays; i++){
+    
+    /* Only do calculation for rays not lost */
+    if(!rays[i].lost){
+      
+      /* Use GSL root-finder to caluclate t for each ray from pri -> sec */
+      t = raytrace_free_distance(rays[i], geom, OPTIC_SEC);
+      
+      if(be_verbose)
+	printf("\nValue of t returned from function: %.5f m\n",t);
+      
+      /* Advance ray to sec */
+      raytrace_advance_ray(&rays[i],t);
+      sec_rad[i] = hypot(rays[i].x,rays[i].y);   // Check size of secondary
+      if(be_verbose)
+	printf("Radius of ray at seconday: %.5f cm\n",sec_rad[i]*100.);
+      
+      /* If selected, write out ray locations to file */
+      if(ps)
+	fprintf(fpp,"%g\t%g\t%f\n",rays[i].x,rays[i].y,rays[i].z);
+    }
+  } // End of loop: primary to secondary
+  
+  /* Close secondary mirror file, if selected */
+  if(ps)
+    fclose(fpp);
+  
+  
+  /* Loop over rays, find reflected v vector off secondary */
+  for(i=0; i<n_rays; i++){
+    
+    /* Only do calculation for rays not lost */
+    if(!rays[i].lost){
+      
+      /* Find normal to the surface at reflection point */
+      normal = raytrace_get_n(rays[i], geom, OPTIC_SEC);
+      
+      if(be_verbose)
+	printf("\nNormal vector: [%.5f,%.5f,%.5f], 1-|n| = %.5e\n",normal.x,
+	       normal.y,normal.z,1.-gsl_hypot3(normal.x,normal.y,normal.z));
+      
+      /* Reflect rays -- update velocities */
+      raytrace_reflect(&rays[i],normal);
+      
+      if(do_foctest)
+	printf("Opening angle of extreme rays (in f/#): %.5f\n",
+	       0.5 / tan(acos(fabs(rays[i].vz))));
+      
+    }
+  } // End of loop: reflect off secondary
+  
+  
+  /*
+   * BRANCHING POINT IN CODE:  EITHER TRACE TO THE FOCAL PLANE AND EXIT --
+   * if() -- OR TRACE TO THE GRATING AND ONTO THE DETECTOR -- else --.
+   */
+  
+  
+  /* If selected, trace to the focal plane and exit */
+  if(stop_foc){
+    
+    /* If selected, open file for focal plane ray locations */
+    if(pf){
+      sprintf(filename,"rt_focalplane_ang%-d.dat",iang);
+      fpp = fileopenw(filename);
+    }
+    
+    /* Loop over rays, from secondary to focal plane */
+    for(i=0; i<n_rays; i++){
+      
+      /* Only do calculation for rays not lost */
+      if(!rays[i].lost){
+	
+	/* Use GSL root-finder to caluclate t for each ray from sec -> f.p. */
+	t = raytrace_free_distance(rays[i], geom, OPTIC_FP);
+	
+	if(be_verbose)
+	  printf("\nValue of t returned from function: %.5f m\n",t);
+	
+	/* Advance ray to focal plane */
+	raytrace_advance_ray(&rays[i],t);
+	
+	/* If selected, write out ray locations to file */
+	if(pf)
+	  fprintf(fpp,"%.10g   %.10g   %.10f\n",rays[i].x,rays[i].y,rays[i].z);
+	
+	
+	if(be_verbose)
+	  printf("Final location of ray: (%10.3g,%10.3g,%10.3f)\n",rays[i].x,
+		 rays[i].y,rays[i].z);
+      }
+    } // End of loop: secondary to focal plane
+    
+    /* Close focal plane file, if selected */
+    if(pf)
+      fclose(fpp);
+  }  
+  
+  
+  /* Else, trace to the grating */
+  else{
+    
+    /* If selected, open file for grating ray locations */
+    if(pg){
+      sprintf(filename,"rt_grating_ang%-d.dat",iang);
+      fpp = fileopenw(filename);
+    }
+    
+    /* Loop over rays, from secondary to diffraction grating */
+    if(be_where)
+      printf("Rays headed towards the grating...\n");
+    for(i=0; i<n_rays; i++){
+      
+      /* Only do calculation for rays not lost */
+      if(!rays[i].lost){
+	
+	/* Use GSL root-finder to caluclate t for each ray from sec -> grat */
+	/* GRS == spherical grating, GRT == torroidal grating */
+	t = raytrace_free_distance(rays[i], geom, OPTIC_GRT);
+	
+	if(be_verbose)
+	  printf("\nValue of t returned from function: %.5f m\n",t);
+	
+	/* Advance ray to focal plane */
+	raytrace_advance_ray(&rays[i],t);
+	
+	/* If selected, write out ray locations to file */
+	if(pg)
+	  fprintf(fpp,"%.10g   %.10g   %.10f\n",rays[i].x,rays[i].y,rays[i].z);
+	
+	
+	if(be_verbose)
+	  printf("Final location of ray: (%10.3g,%10.3g,%10.3f)\n",rays[i].x,
+		 rays[i].y,rays[i].z);
+      }
+    } // End of loop: secondary to grating
+    
+    /* Close grating file, if selected */
+    if(pg)
+      fclose(fpp);
+    
+    
+    /* Loop over rays, find reflected v vector off grating */
+    for(i=0; i<n_rays; i++){
+      
+      /* Only do calculation for rays not lost */
+      if(!rays[i].lost){
+	
+	/* Find normal to the surface at reflection point */
+	normal = raytrace_get_n(rays[i], geom, OPTIC_GRT);
+	
+	/* Find the groove vector g at reflection point */
+	g = raytrace_get_g(rays[i], geom, OPTIC_GRT, &delta);
+	
+	if(be_verbose){
+	  printf("\nNormal vector:   [%.5f,%.5f,%.5f], 1-|n| = %.5e\n",normal.x,
+		 normal.y,normal.z,1.-gsl_hypot3(normal.x,normal.y,normal.z));
+	  printf("Grating vector:  [%.5f,%.5f,%.5f], 1-|n| = %.5e\n",
+		 g.x,g.y,g.z,1.-gsl_hypot3(g.x,g.y,g.z));
+	}
+	/* Bounce light off grating -- update velocities */
+	raytrace_vecray(-1.,geom.d/delta,&rays[i],normal,g);
+	
+	if(be_verbose)
+	  printf("Outgoing vector:  [%.5f,%.5f,%.5f], 1-|n| = %.5e\n",
+		 rays[i].vx,rays[i].vy,rays[i].vz,
+		 1.-gsl_hypot3(rays[i].vx,rays[i].vy,rays[i].vz));
+      }
+    } // End of loop: diffraction off grating
+    
+    
+    /* If selected, open file for detector ray locations */
+    if(pd){
+      sprintf(filename,"rt_detector_ang%-d.dat",iang);
+      fpp = fileopenw(filename);
+    }
+    
+    /* Loop over rays, from grating to cylindrical detector */
+    if(be_where)
+      printf("Rays headed towards the detector...\n");
+    for(i=0; i<n_rays; i++){
+      
+      /* Only do calculation for rays not lost */
+      if(!rays[i].lost){
+	
+	/* Use GSL root-finder to caluclate t for each ray from grat -> det */
+	t = raytrace_free_distance(rays[i], geom, OPTIC_SF);
+	
+	if(be_verbose)
+	  printf("\nValue of t returned from function: %.5f m\n",t);
+	
+	/* Advance ray to focal plane */
+	raytrace_advance_ray(&rays[i],t);
+	
+	/* If selected, write out ray locations to file */
+	if(pd)
+	  fprintf(fpp,"%.12g   %.12g   %.12f\n",rays[i].x,rays[i].y,rays[i].z);
+	
+	if(be_verbose)
+	  printf("Final location of ray: (%10.3g,%10.3g,%10.3f)\n",rays[i].x,
+		 rays[i].y,rays[i].z);
+      }
+    } // End of loop: grating to detector
+    
+    /* Close detector file, if selected */
+    if(pd)
+      fclose(fpp);
+    
+    
+    /* MAP FINAL RAY POSITIONS ONT CYLINDRICAL DETECTOR */
+    sprintf(filename,"detector_plane_lambda%-.2f.dat",rays[0].lambda);
+    fpp = fileopenw(filename);
+    
+    for(i=0; i<n_rays; i++){
+      
+      /* Only do calculation for rays not lost */
+      if(!rays[i].lost){
+	
+	det_plane = raytrace_mapdetector(rays[i], geom);
+	
+	if(be_verbose)
+	  printf("Detector Plane Values: [%.5f,%.5f,%.5g]\n",
+		 det_plane.x,det_plane.y,det_plane.z);
+	
+	fprintf(fpp,"%.12g     %.12g\n",det_plane.x,det_plane.y);
+	
+      }
+    } // End of loop: maping detector
+    
+    fclose(fpp);
+    
+  } // End of the ELSE clause (i.e. secondary --> detector)
+  
+  /* Clean up */
+  gsl_rng_free(r);
+  
+  return 0;
+}
+
+
+/* prints out usage information if command line arguments are not correct */
+void print_usage(){
+  
+  printf("\nray_trace:\n");
+  printf("Ray trace program for Instrumentation (ASTR 5760, F'09).  Traces\n");
+  printf("rays through a Cassegrain Telescope / Corrected Rowland Circle\n");
+  printf("Spectrograph.\n");
+  printf("     Uses GSL, and ARGTABLE libraries.\n");
+  printf("\n");
+  printf("usage: ray_trace\n");
+  
+  return;
+}
+ 
+/******** ray_funcs.h ********/
+/* Timothy Ellsworth Bowers
+   13 October 2009
+
+   Header file with structure definitions and function declarations for the 
+   subroutine functions needed for the Ray Trace Project (ASTR 5760, F09).
+*/
+
+
+/* Define symbolic integers for the various surfaces in the problem */
+#define OPTIC_PRI 20        // Primary Mirror
+#define OPTIC_SEC 21        // Secondary Mirror
+#define OPTIC_GRS 22        // Spherical Dispersion Grating
+#define OPTIC_GRT 23        // Torroidal Dispersion Grating
+#define OPTIC_FP  24        // Cassegrain Focal Plane
+#define OPTIC_SF  25        // Rowland Circle Spectral Focus
+
+/* Typedef structures needed for this problem */
+
+// "Ray", including position, direction, wavelength & lost flag
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double vx;
+  double vy;
+  double vz;
+  double lambda;
+  int lost;
+} raytrace_ray;
+
+// Geometry of the problem, built as a structure for easier passing
+typedef struct{
+  double f;
+  double b;
+  double v;
+  double e;
+  double Dp;
+  double Ds;
+  double Rrc;
+  double alpha;          // In radians
+  double d;
+} raytrace_geom;
+
+// Parameters needed for passing to the GSL root-finding functions
+typedef struct{
+  raytrace_ray ray;
+  raytrace_geom geom;
+  int surf;
+} raytrace_root_params;
+
+
+/* Function declarations */
+double       primary_z(double, double, raytrace_geom *);
+double       secondary_z(double, double, raytrace_geom *);
+double       focalplane_z(double, double, raytrace_geom *);
+double       sph_grating_z(double, double, raytrace_geom *);
+double       tor_grating_z(double, double, raytrace_geom *);
+double       detector_z(double, double, raytrace_geom *);
+
+double       raytrace_free_distance(raytrace_ray, raytrace_geom, int);
+double       raytrace_distroot(double, void*);
+void         raytrace_advance_ray(raytrace_ray *, double);
+raytrace_ray raytrace_get_n(raytrace_ray, raytrace_geom, int);
+raytrace_ray raytrace_get_g(raytrace_ray, raytrace_geom, int, double *);
+void         raytrace_reflect(raytrace_ray *, raytrace_ray);
+void         raytrace_vecray(double, double, raytrace_ray *,
+			     raytrace_ray, raytrace_ray);
+raytrace_ray raytrace_mapdetector(raytrace_ray, raytrace_geom);
+ 
+/******** ray_funcs.c ********/
+/* Timothy Ellsworth Bowers
+   13 October 2009
+
+   Subroutine functions needed for the Ray Trace Project (ASTR 5760, F09).
+*/
+
+#include "ray_funcs.h"
+#include <math.h>
+#include <gsl/gsl_roots.h>
+#include <gsl/gsl_errno.h>
+
+
+/* Function for calculating the surface of the primary mirror z = f(x,y) */
+double primary_z(double x, double y, raytrace_geom *geom){
+
+  double f = geom->f;
+  double v = geom->v;
+  
+  return (x*x + y*y)/(4.*f) - v;
+}
+
+
+/* Function for calculating the surface of the secondary mirror z = f(x,y) */
+double secondary_z(double x, double y, raytrace_geom *geom){
+  
+  double e = geom->e;
+  double f = geom->f;
+  double b = geom->b;
+  double v = geom->v;
+  
+  return sqrt( (x*x + y*y)/(e*e -1.) + (f+b)*(f+b)/(4.*e*e)) -
+    (v - f/2. + b/2.);
+}
+
+
+/* Function for calculating the surface of the focal plane z = f(x,y) */
+double focalplane_z(double x, double y, raytrace_geom *geom){
+
+  return -(geom->v + geom->b);
+}
+
+
+/* Function for calculating the surface of the sphrical grating z = f(x,y) */
+double sph_grating_z(double x, double y, raytrace_geom *geom){
+
+  double b     = geom->b;
+  double v     = geom->v;
+  double R     = geom->Rrc;
+  double alpha = geom->alpha;
+
+  double x0 = -R * sin(alpha);
+  double y0 = 0.;
+  double z0 = -(v+b);
+  
+  return z0 - sqrt( R*R - (x-x0)*(x-x0) - (y-y0)*(y-y0) );
+}
+
+
+/* Function for calculating the surface of the torroidal grating z = f(x,y) */
+double tor_grating_z(double x, double y, raytrace_geom *geom){
+
+  double b     = geom->b;
+  double v     = geom->v;
+  double R     = geom->Rrc;
+  double alpha = geom->alpha;
+
+  double x0 = -R * sin(alpha);
+  double y0 = 0.;
+  double z0 = -(v+b);
+
+  double beta = asin(0.126);             // Optimize for 1250A & 1750A
+  
+  double big_Rt = R*(1. - cos(alpha)*cos(beta));
+  double lit_rt = R*cos(alpha)*cos(beta);
+
+  double R_rad = big_Rt + sqrt( lit_rt*lit_rt - (y-y0)*(y-y0) );
+
+  return z0 - sqrt( R_rad*R_rad - (x-x0)*(x-x0) );
+}
+
+/* Function for calculating the surface of the cylindrical detector */
+double detector_z(double x, double y, raytrace_geom *geom){
+
+  double b     = geom->b;
+  double v     = geom->v;
+  double R     = geom->Rrc;
+  double alpha = geom->alpha;
+
+  double x0 = -(R/2.) * sin(alpha);
+  double z0 = -(v+b) - (R/2.)*cos(alpha);
+  
+  return z0 + sqrt( (R/2.)*(R/2.) - (x - x0)*(x-x0));
+  
+}
+
+
+double raytrace_free_distance(raytrace_ray ray, raytrace_geom geom, int surf){
+  
+  /* Variable declarations */
+
+  /* Variables needed for GSL's root-finder algorithms */
+  int status;
+  int iter = 0, max_iter = 100;
+  const gsl_root_fsolver_type *T;
+  gsl_root_fsolver *s;
+  double r = 0;
+  double x_lo = 0.0, x_hi = 5.0;
+  gsl_function F;
+  
+  raytrace_root_params params = {ray, geom, surf}; 
+  
+  /* If w/in Rowland Circle, reduce x_hi to 2.1 */
+  if(surf == OPTIC_SF) x_hi = 2.1;
+
+
+  F.function = &raytrace_distroot; 
+  F.params = &params;
+  
+  /* Solve using GSL's Brent's Method Solver */
+  //  T = gsl_root_fsolver_brent;
+  T = gsl_root_fsolver_brent;
+  s = gsl_root_fsolver_alloc(T);
+  gsl_root_fsolver_set(s, &F, x_lo, x_hi);
+  
+  
+  do{
+    iter++;
+    status = gsl_root_fsolver_iterate(s);
+    r = gsl_root_fsolver_root(s);
+    x_lo = gsl_root_fsolver_x_lower(s);
+    x_hi = gsl_root_fsolver_x_upper(s);
+    status = gsl_root_test_interval(x_lo, x_hi, 0, 1.e-14);
+  } while (status == GSL_CONTINUE && iter < max_iter);
+  
+  gsl_root_fsolver_free (s);
+  
+  return r;
+}
+
+
+double raytrace_distroot(double t, void *params){
+
+  raytrace_root_params *p = (raytrace_root_params *)params; 
+
+  double x1 = p->ray.x;
+  double y1 = p->ray.y;
+  double z1 = p->ray.z;
+
+  double xa = p->ray.vx;
+  double ya = p->ray.vy;
+  double za = p->ray.vz;
+  int surf  = p->surf;
+  double z2;
+   
+  raytrace_geom geom = p->geom;
+  
+  /* Select proper optical surface, based on parameter passed */
+
+  if(surf == OPTIC_PRI)
+    z2 = primary_z(x1 + t*xa, y1 + t*ya, &geom);
+  else if(surf == OPTIC_SEC)
+    z2 = secondary_z(x1 + t*xa, y1 + t*ya, &geom);
+  else if(surf == OPTIC_FP)
+    z2 = focalplane_z(x1 + t*xa, y1 + t*ya, &geom);
+  else if(surf == OPTIC_GRS)
+    z2 = sph_grating_z(x1 + t*xa, y1 + t*ya, &geom);
+  else if(surf == OPTIC_GRT)
+    z2 = tor_grating_z(x1 + t*xa, y1 + t*ya, &geom);
+  else if(surf == OPTIC_SF)
+    z2 = detector_z(x1 + t*xa, y1 + t*ya, &geom);
+
+  /* Return condition on root */
+  return z1 + t*za - z2;
+}
+
+
+/* Function for advancing rays along path */
+void raytrace_advance_ray(raytrace_ray *beam, double d){
+  
+  beam->x = beam->x + d * beam->vx;
+  beam->y = beam->y + d * beam->vy;
+  beam->z = beam->z + d * beam->vz;
+  
+  return;  
+}
+
+/* Wrapper function to find the normal vector of a surface at a given point */
+raytrace_ray raytrace_get_n(raytrace_ray pos, raytrace_geom geom, int surf){
+  
+  /* Variable declarations */
+  raytrace_ray n;
+  double x = pos.x;
+  double y = pos.y;
+  double z = pos.z;
+  double f = geom.f;
+  double v = geom.v;
+  double b = geom.b;
+  double e = geom.e;
+  double esm1 = (e*e - 1.);
+  double R = geom.Rrc;
+  double alpha = geom.alpha;
+  double norm;
+  double xyfact;
+  double xg,yg,zg;
+  double Rt,xz_rad,beta;
+  
+  /* Select surface, and calculate n */
+
+  /* PRIMARY MIRROR */
+  if(surf == OPTIC_PRI){
+
+    /* Normalization */
+    norm = sqrt(x*x + y*y + 4.*f*f);
+    
+    n.x = -x / norm;
+    n.y = -y / norm;
+    n.z = 2.*f / norm;
+    
+  /* SECONDARY MIRROR */
+  }else if(surf == OPTIC_SEC){
+    
+    /* Normalization */
+    xyfact = (x*x + y*y)/esm1 + (b+f)*(b+f)/(4.*e*e);
+
+    norm = sqrt(esm1*esm1 + (x*x + y*y)/xyfact);
+
+    n.x = -x / sqrt(xyfact) / norm;
+    n.y = -y / sqrt(xyfact) / norm;
+    n.z = esm1 / norm;
+   
+  /* FOCAL PLANE */
+  }else if(surf == OPTIC_FP){
+    
+    n.x = 0.0;
+    n.y = 0.0;
+    n.z = 1.0;
+    
+    /* SPHERICAL GRATING */
+  }else if(surf == OPTIC_GRS){
+    
+    xg = -R*sin(alpha);
+    yg = 0.0;
+    zg = -(v+b);
+      
+
+    /* Normalization */
+    norm = gsl_hypot3(xg-x, yg-y, zg- z);
+    
+    n.x = (xg - x) / norm;
+    n.y = (yg - y) / norm;
+    n.z = (zg - z) / norm;    
+    
+    /* TOROIDAL GRATING */
+  }else if(surf == OPTIC_GRT){
+    
+    xg = -R*sin(alpha);
+    yg = 0.0;
+    zg = -(v+b);
+    
+    beta = asin(0.108);                      // Optimize for 1300A & 1900A
+
+    Rt = R*(1. - cos(alpha)*cos(beta));            // R from torus equation
+
+    xz_rad = sqrt((x-xg)*(x-xg) + (z-zg)*(z-zg));  // Simplification
+
+    /* Normal vecotr */
+    n.x = -(xg - x) * (Rt - xz_rad) / xz_rad;
+    n.y = (yg - y);
+    n.z = -(zg - z) * (Rt - xz_rad) / xz_rad;
+    
+    /* Normalization */
+    norm = gsl_hypot3(n.x, n.y, n.z);
+
+    n.x /= norm;
+    n.y /= norm;
+    n.z /= norm;
+    
+  }
+  
+  return n;
+}
+
+
+/* Function to find the grating groove vector g and line spacing correction */
+raytrace_ray raytrace_get_g(raytrace_ray pos, raytrace_geom geom, int surf,
+			    double *del){
+  
+  /* Variable delcarations */
+  raytrace_ray x,n,g;
+  double norm;
+  double alpha = geom.alpha;
+  
+  /* Define x to be the vector tangent to the "vertex" of the spherical
+     grating, in the x-z plane */
+  x.x = sin(M_PI/2. - alpha);
+  x.y = 0.;
+  x.z = cos(M_PI/2.  - alpha);
+  
+  /* Normal vector at this point */
+  n = raytrace_get_n(pos,geom,surf);
+  
+  /* g = (x x n)/|x x n| */
+  g.x = x.y*n.z - x.z*n.y;
+  g.y = x.z*n.x - x.x*n.z;
+  g.z = x.x*n.y - x.y*n.x;
+  
+  /* Normalize g to 1 */
+  norm = gsl_hypot3(g.x,g.y,g.z);
+  
+  g.x /= norm;
+  g.y /= norm;
+  g.z /= norm;
+  
+  /* Line spacing correction del = x cross (n_xz) */
+  norm = hypot(n.x,n.z);
+  n.x /= norm;
+  n.z /= norm;
+  
+  *del = gsl_hypot3( 0. , x.z*n.x - x.x*n.z,  0.);
+  return g;
+}
+
+
+/* Function to reflect the incoming ray based on i.n = -o.n & ixn = oxn */
+void raytrace_reflect(raytrace_ray *a, raytrace_ray n){
+  
+  /* Variable declarations */
+  double xap, yap, zap;
+  
+  /* Calculate zap first */
+  zap = (n.x*n.x + n.y*n.y - n.z*n.z)*a->vz - 2.*n.x*n.z*a->vx - 
+    2.*n.y*n.z*a->vy;
+  
+  /* Calculate xap & yap based on zap */
+  yap = a->vy + (n.y/n.z)*(zap - a->vz);
+  xap = a->vx + (n.x/n.z)*(zap - a->vz);
+  
+  /* Place updated velocities in ray a */
+  a->vx = xap;
+  a->vy = yap;
+  a->vz = zap;
+  
+  return;
+}
+
+
+/* Function to bounce light off a diffraction grating
+   Adapted and translated from the FORTRAN subroutine vecray from Jim Green */
+void raytrace_vecray(double m, double d, raytrace_ray *ray,
+		     raytrace_ray n, raytrace_ray g){
+  
+  /* Comments from the vecray.f code:
+     m = order
+     d = line spacing (angstroms/line)
+     l = wavelength (angstroms)
+     N is plane normal, pointing up on side that rays hit
+     G is vector in direction of lines on grating
+     I is incident vector pointing in ray prop. direction
+     o is output vector pointing in ray prop. direction
+     x indicates primed coordinate systemc
+     xx indicates double primed coordinate system
+  */
+  
+  /* Variable Declarations */
+  double l,a,g1,g2,g3,n1,n2,n3,i1,i2,i3,o1,o2,o3,xn1,xn2;
+  double r11,r12,r13,r21,r22,r23,r31,r32,r33;
+  double rt11,rt12,rt13,rt21,rt22,rt23,rt31,rt32,rt33;
+  double xxi1,xxi3,xxo1,xxo2,xxo3;
+  
+  /* Place raytrace_ variables into routine variables */
+  g1 = g.x;
+  g2 = g.y;
+  g3 = g.z;
+  
+  n1 = n.x;
+  n2 = n.y;
+  n3 = n.z;
+  
+  i1 = ray->vx;
+  i2 = ray->vy;
+  i3 = ray->vz;
+  
+  l = ray->lambda;
+  
+  /* Line-for-line translation of FORTRAN routine */
+  
+  goto line60;
+ line50: ;
+  g1 = -g1;                  // Turn g -> -g if it was defined in the "wrong"
+  g2 = -g2;                  // way initally.  There is an inherent sign
+  g3 = -g3;                  // ambigutiy in g, and this corrects for it.
+ line60: ;  
+  
+  a = sqrt(1.0 - g3*g3);     // Normalization
+  
+  xn1 = ( n1*g2 - n2*g1 ) / a;
+  xn2 = g3*( n1*g1 + n2*g2 ) / a  - a*n3;
+  
+  /* Comments:  
+     R is the transform from basic to xx coordinates
+     in xx coordinates, g is in the z direction
+     RT is the return transform
+  */
+  
+  r11 = ( xn2*g2 - xn1*g3*g1 )/a;
+  r12 = -( xn2*g1 + xn1*g2*g3 )/a;
+  r13 = xn1*a;
+  r21 = (xn1*g2 + xn2*g3*g1)/a;
+  r22 = ( -xn1*g1 + xn2*g2*g3 )/a;
+  r23 = -a*xn2;
+  r31 = g1;
+  r32 = g2;
+  r33 = g3;
+  
+  rt11 = r11;
+  rt12 = r21;
+  rt13 = r31;
+  rt21 = r12;
+  rt22 = r22;
+  rt23 = r32;
+  rt31 = r13;
+  rt32 = r23;
+  rt33 = r33;
+  
+  xxi1 = i1*r11 + i2*r12 + i3*r13;
+  
+  if(xxi1 < 0.) goto line50;
+  
+  xxi3 = i1*r31 + i2*r32 + i3*r33;
+  
+  xxo1 = (m*l/d) + xxi1;
+  xxo3 = xxi3;
+  xxo2 = sqrt ( 1.0 - xxo1*xxo1 - xxo3*xxo3 );
+  
+  o1 = xxo1*rt11 + xxo2*rt12 + xxo3*rt13;
+  o2 = xxo1*rt21 + xxo2*rt22 + xxo3*rt23;
+  o3 = xxo1*rt31 + xxo2*rt32 + xxo3*rt33;
+  
+  
+  /* Place output ray back into raytrace_ variables */
+  ray->vx = o1;
+  ray->vy = o2;
+  ray->vz = o3;
+  
+  return;
+}
+
+
+/* Function for mapping the (x,y,z) coordinates onto the (RADIUS,x,y) of
+   the cylindrical detector */
+raytrace_ray raytrace_mapdetector(raytrace_ray pos, raytrace_geom geom){
+  
+  /* Variable Declarations */
+  double x0,z0;
+  raytrace_ray det;
+  double alpha = geom.alpha;
+  double x = pos.x;
+  double y = pos.y;
+  double z = pos.z;
+  double R = geom.Rrc;
+  double v = geom.v;
+  double b = geom.b;
+  
+  /* Find center of the cylindrical detector (raduis of curvature) */
+  x0 = -(R/2.)*sin(alpha);
+  z0 = -(v+b) - (R/2.)*cos(alpha);
+  
+  /* Map */
+  det.z = (R/2.) - sqrt( (x-x0)*(x-x0) + (z-z0)*(z-z0));   // Height above det.
+  det.x = (R/2.-det.z) * (M_PI/2. + alpha - atan2(z-z0,x-x0));   // detector-x
+  det.y = y;                                                     // detector-y
+  
+  return det;
+}

@@ -1,0 +1,77 @@
+
+	subroutine vecray(m,d,l,n1,n2,n3,g1,g2,g3,i1,i2,i3,o1,o2,o3)
+
+
+
+
+	implicit double precision (a-h,o-z)
+	real*8 m,d,l,n1,n2,n3,i1,i2,i3,g1,g2,g3,o1,o2,o3
+
+
+
+
+c	m = order
+c	d = line spacing (angstroms/line)
+c	l = wavelength (angstroms)
+c	N is plane normal, pointing up on side that rays hit
+c	G is vector in direction of lines on grating
+c	I is incident vector pointing in ray prop. direction
+c	o is output vector pointing in ray prop. direction
+c	x indicates primed coordinate system
+c	xx indicates double primed coordinate system
+
+	
+	goto 60
+ 50	continue
+	g1 = -g1
+	g2 = -g2
+	g3 = -g3
+ 60	continue
+
+
+	a = sqrt ( 1.0 - g3*g3 )
+
+	xn1 = ( n1*g2 - n2*g1 )/a
+	xn2 = g3*( n1*g1 + n2*g2 )/a  - a*n3
+
+c	R is the transform from basic to xx coordinates
+c	in xx coordinates, g is in the z direction
+c	RT is the return transform
+
+	r11 = ( xn2*g2 - xn1*g3*g1 )/a
+	r12 = -( xn2*g1 + xn1*g2*g3 )/a
+	r13 = xn1*a
+	r21 = (xn1*g2 + xn2*g3*g1)/a
+	r22 = ( -xn1*g1 + xn2*g2*g3 )/a
+	r23 = -a*xn2
+	r31 = g1
+	r32 = g2
+	r33 = g3
+
+	rt11 = r11
+	rt12 = r21
+	rt13 = r31
+	rt21 = r12
+	rt22 = r22
+	rt23 = r32
+	rt31 = r13
+	rt32 = r23
+	rt33 = r33
+
+
+	xxi1 = i1*r11 + i2*r12 + i3*r13
+
+	if (xxi1.lt.0) goto 50
+
+	xxi3 = i1*r31 + i2*r32 + i3*r33
+
+	xxo1 = (m*l/d) + xxi1
+	xxo3 = xxi3
+	xxo2 = sqrt ( 1.0 - xxo1*xxo1 - xxo3*xxo3 )
+
+	o1 = xxo1*rt11 + xxo2*rt12 + xxo3*rt13
+	o2 = xxo1*rt21 + xxo2*rt22 + xxo3*rt23
+	o3 = xxo1*rt31 + xxo2*rt32 + xxo3*rt33
+
+	return
+	end
