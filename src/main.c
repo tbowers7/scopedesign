@@ -24,7 +24,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <argtable2.h>
+#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
+#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 
+void print_usage();                    // Delaration for print_usage() function
 
 
 
@@ -50,4 +55,20 @@ int main(int argc, char *argv[])
 
 
 
+}
+
+
+
+/* prints out usage information if command line arguments are not correct */
+void print_usage(){
+  
+  printf("\nray_trace:\n");
+  printf("Ray trace program for Instrumentation (ASTR 5760, F'09).  Traces\n");
+  printf("rays through a Cassegrain Telescope / Corrected Rowland Circle\n");
+  printf("Spectrograph.\n");
+  printf("     Uses GSL, and ARGTABLE libraries.\n");
+  printf("\n");
+  printf("usage: ray_trace\n");
+  
+  return;
 }
