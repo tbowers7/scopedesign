@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     rays[i].x = 0;
   }
   
+  write_focal_plane;
   
   printf("Everything's fine!\n");
   
