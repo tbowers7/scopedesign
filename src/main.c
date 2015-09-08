@@ -4,6 +4,8 @@
  * through ray tracing and simulated focal planes.
  * 
  * Timothy P. Ellsworth Bowers
+ *
+ * FILE: main.c
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +30,7 @@
 #include <argtable2.h>
 #include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+#include "scope.h"
 
 void print_usage();                    // Delaration for print_usage() function
 
@@ -38,23 +41,33 @@ void print_usage();                    // Delaration for print_usage() function
 int main(int argc, char *argv[])
 {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  /* Variable Declarations */
+  int i;
+  scope_ray *rays,normal,g,det_plane;
+  
+  rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
+  
+  
+  /* Setup GSL's RNG */
+  const gsl_rng_type *T;
+  gsl_rng *r;
+  
+  gsl_rng_env_setup();
+  T = gsl_rng_ranlux389;
+  r = gsl_rng_alloc(T);
+  
+  for(i=0; i < N_RAYS; i++){
+    rays[i].x = 0;
+  }
+  
+  
+  printf("Everything's fine!\n");
+  
+  /* Clean up */
+  gsl_rng_free(r);
+  
+  
+  return 0;
 }
 
 
