@@ -27,8 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <argtable2.h>
-#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
+//#include <argtable2.h>
+//#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include "scope.h"
 
