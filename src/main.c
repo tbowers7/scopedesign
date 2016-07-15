@@ -29,7 +29,7 @@
 #include <math.h>
 //#include <argtable2.h>
 //#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
-#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+//#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include "scope.h"
 
 void print_usage();                    // Delaration for print_usage() function
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
   
   
   /* Setup GSL's RNG */
+  /*
   const gsl_rng_type *T;
   gsl_rng *r;
   
@@ -60,12 +61,13 @@ int main(int argc, char *argv[])
     rays[i].x = 0;
   }
   
+  */
   write_focal_plane;
   
   printf("Everything's fine!\n");
   
   /* Clean up */
-  gsl_rng_free(r);
+  //  gsl_rng_free(r);
   
   
   return 0;

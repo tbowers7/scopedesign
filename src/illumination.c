@@ -33,7 +33,7 @@ void write_focal_plane(){
   int status;
   
   
-  fits_wrap_write2file(fn, hd,  array,size, &status);
+  //fits_wrap_write2file(fn, hd,  array,size, &status);
   
   
   
