@@ -30,7 +30,7 @@
 //#include <argtable2.h>
 //#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
 //#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
-#include "scope.h"
+#include "definitions.h"
 
 void print_usage();                    // Delaration for print_usage() function
 
