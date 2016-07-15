@@ -28,24 +28,24 @@ builddir       = @builddir@
 srcdir         = @srcdir@
 VPATH          = @srcdir@
 
-all: jupiter
+all: scopedesign
 
-jupiter: main.c
+scopedesign: main.c illumination.c illumination.h definitions.h
 	$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -I. -I$(srcdir) -I.. -o $@ $(srcdir)/main.c $(LIBS)
 
 clean:
-	-rm jupiter &>/dev/null
+	-rm scopedesign &>/dev/null
 
 check: all
-	./jupiter | grep "Hello from .*jupiter!"
+	./scopedesign | grep "Hello from .*scopedesign!"
 	@echo "*** All TESTS PASSED"
 
 install:
 	$(INSTALL) -d $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) -m 0755 jupiter $(DESTDIR)$(bindir)/jupiter
+	$(INSTALL_PROGRAM) -m 0755 scopedesign $(DESTDIR)$(bindir)/scopedesign
 
 uninstall:
-	-rm $(DESTDIR)$(bindir)/jupiter
+	-rm $(DESTDIR)$(bindir)/scopedesign
 
 Makefile: Makefile.in ../config.status
 	cd .. && ./config.status src/$@

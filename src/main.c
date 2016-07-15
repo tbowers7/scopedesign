@@ -37,6 +37,36 @@ void print_usage();                    // Delaration for print_usage() function
 
 
 
+/* Test code from the JUPITER project */
+//
+//
+//
+
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#if HAVE_PTHREAD_H
+# include <pthread.h>
+#endif
+
+static void * print_it(void * data)
+{
+	printf("Hello from %s!\n", (char *)data);
+	return 0;
+}
+	
+//
+//
+//
+/* Test code from the JUPITER project */
+
+
+
+
 
 int main(int argc, char *argv[])
 {
@@ -68,6 +98,22 @@ int main(int argc, char *argv[])
   
   /* Clean up */
   //  gsl_rng_free(r);
+  
+  
+  /* Test code from the JUPITER project */
+  //
+#if HAVE_LIBPTHREAD
+  pthread_t tid;
+  pthread_create(&tid, 0, print_it, argv[0]);	
+  pthread_join(tid, 0);
+#else
+  print_it(argv[0]);
+#endif
+  //
+  /* Test code from the JUPITER project */
+  
+  
+  
   
   
   return 0;
