@@ -28,7 +28,7 @@ builddir       = @builddir@
 srcdir         = @srcdir@
 VPATH          = @srcdir@ 
 
-all clean check install uninstall jupiter:
+all clean check install uninstall scopedesign:
 	$(MAKE) -C src $@
 
 dist: $(distdir).tar.gz
@@ -44,7 +44,8 @@ $(distdir):
 	cp $(srcdir)/install-sh $(distdir)
 	cp $(srcdir)/Makefile.in $(distdir)
 	cp $(srcdir)/src/Makefile.in $(distdir)/src
-	cp $(srcdir)/src/main.c $(distdir)/src
+	cp $(srcdir)/src/*.c $(distdir)/src
+	cp $(srcdir)/src/*.h $(distdir)/src
 
 distcheck: $(distdir).tar.gz
 	gzip -cd $+ | tar xvf -
