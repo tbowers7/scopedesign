@@ -27,6 +27,7 @@ $(distdir):
 	cp Makefile $(distdir)
 	cp src/Makefile $(distdir)/src
 	cp src/*.c $(distdir)/src
+	cp src/*.h $(distdir)/src
 
 distcheck: $(distdir).tar.gz
 	gzip -cd $+ | tar xvf -
