@@ -29,7 +29,7 @@
 #include <math.h>
 //#include <argtable2.h>
 //#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
-//#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include "definitions.h"
 
 void print_usage();                    // Delaration for print_usage() function
@@ -45,9 +45,6 @@ void print_usage();                    // Delaration for print_usage() function
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
-
-#include <stdio.h>
-#include <stdlib.h>
 
 #if HAVE_PTHREAD_H
 # include <pthread.h>
@@ -79,7 +76,7 @@ int main(int argc, char *argv[])
   
   
   /* Setup GSL's RNG */
-  /*
+  
   const gsl_rng_type *T;
   gsl_rng *r;
   
@@ -91,24 +88,23 @@ int main(int argc, char *argv[])
     rays[i].x = 0;
   }
   
-  */
+  
   write_focal_plane;
   
   printf("Everything's fine!\n");
   
   /* Clean up */
-  //  gsl_rng_free(r);
+  gsl_rng_free(r);
   
   
   /* Test code from the JUPITER project */
   //
-#if HAVE_LIBPTHREAD
+
   pthread_t tid;
   pthread_create(&tid, 0, print_it, argv[0]);	
   pthread_join(tid, 0);
-#else
-  print_it(argv[0]);
-#endif
+  printf("We went down path #1.\n");
+
   //
   /* Test code from the JUPITER project */
   
