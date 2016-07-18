@@ -55,6 +55,7 @@ distcheck: $(distdir).tar.gz
 	$(MAKE) -C $(distdir) clean
 	rm -rf $(distdir)
 	@echo "*** Package $(distdir).tar.gz is ready for distribution."
+	scp $(distdir).tar.gz ellswotp@origins2.colorado.edu:~/public_html/scopedesign/.
 
 Makefile: Makefile.in config.status
 	./config.status $@
