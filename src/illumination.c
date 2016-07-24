@@ -25,17 +25,17 @@
 
 
 
-void write_focal_plane(){
+int write_focal_plane(){
   
   char *fn="filename";
   char *hd="hd";
   double **array,**size;
-  int status;
+  int status=0;
   
   
   //fits_wrap_write2file(fn, hd,  array,size, &status);
   
-  
+  return status;
   
   
 }

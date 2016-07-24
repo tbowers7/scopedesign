@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  * 
- * FILE: definitions.h
+ * FILE: rays.h
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,35 +23,8 @@
  *
  */
 
-/* Define values to be used */
-#define N_RAYS 100000       // Number of rays to be used
-
-/* Define symbolic integers for various surfaces */
-#define OPTIC_PRI 20        // Primary Mirror
-#define OPTIC_SEC 21        // Secondary Mirror
-#define OPTIC_GRS 22        // Spherical Dispersion Grating
-#define OPTIC_GRT 23        // Torroidal Dispersion Grating
-#define OPTIC_FP  24        // Cassegrain Focal Plane
-#define OPTIC_SF  25        // Rowland Circle Spectral Focus
-#define OPTIC_NFP 26        // Newtonian Focal Plane
-
-
-/* Typedef structures needed */
-
-// "Ray", including position, direction, wavelength & lost flag
-typedef struct{
-  double x;
-  double y;
-  double z;
-  double vx;
-  double vy;
-  double vz;
-  double lambda;
-  int lost;
-} scope_ray;
+/* Include packages */
 
 
 /* Function declarations */
-
-#include "illumination.h"
-#include "rays.h"
+int initialize_rays();

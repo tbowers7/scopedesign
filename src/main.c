@@ -29,7 +29,6 @@
 #include <math.h>
 //#include <argtable2.h>
 //#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
-#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include "definitions.h"
 
 void print_usage();                    // Delaration for print_usage() function
@@ -69,32 +68,13 @@ int main(int argc, char *argv[])
 {
 
   /* Variable Declarations */
-  int i;
-  scope_ray *rays,normal,g,det_plane;
+  int wfp_stat=0,ir_stat=0;               // Status variables
+
   
-  rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
-  
-  
-  /* Setup GSL's RNG */
-  
-  const gsl_rng_type *T;
-  gsl_rng *r;
-  
-  gsl_rng_env_setup();
-  T = gsl_rng_ranlux389;
-  r = gsl_rng_alloc(T);
-  
-  for(i=0; i < N_RAYS; i++){
-    rays[i].x = 0;
-  }
-  
-  
-  write_focal_plane;
+  ir_stat  = initialize_rays;
+  wfp_stat = write_focal_plane;
   
   printf("Everything's fine!\n");
-  
-  /* Clean up */
-  gsl_rng_free(r);
   
   
   /* Test code from the JUPITER project */
