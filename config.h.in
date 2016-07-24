@@ -3,6 +3,9 @@
 /* async exec enabled */
 #undef ASYNC_EXEC
 
+/* Define to 1 if you have the <fitsio.h> header file. */
+#undef HAVE_FITSIO_H
+
 /* Define to 1 if you have the <gsl/gsl_rng.h> header file. */
 #undef HAVE_GSL_GSL_RNG_H
 

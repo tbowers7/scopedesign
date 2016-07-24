@@ -41,16 +41,32 @@ if test "x${async_exec}" = xyes; then
   AC_DEFINE([ASYNC_EXEC], 1, [async exec enabled])
 fi
 
+# Check for GSL_RNG
 AC_SEARCH_LIBS([gsl_rng_env_setup],[gsl],[have_gsl_rng=yes])
 if test "x${have_gsl_rng}" = xyes; then
    AC_CHECK_HEADERS([gsl/gsl_rng.h],[],[have_gsl_rng=no])
 fi
 
+# Check for CFITSIO
+AC_SEARCH_LIBS([fits_open_file],[cfitsio],[have_fitsio=yes],[have_fitsio=no])
+if test "x${have_fitsio}" = xyes; then
+   AC_CHECK_HEADERS([fitsio.h],[],[have_fitsio=no])
+fi
+if test "x${have_fitsio}" = xno; then
+   echo "No FITSIO found!"
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+
+
+# Check for installed DS9 for display of FITS images produced by the program
+AC_CHECK_PROG([have_ds9],[ds9],[yes],[no])
+if test "x${have_ds9}" = xno; then
+   echo "No DS9 found!"
+fi
 
 # Checks for library functions.
 AC_FUNC_MALLOC
