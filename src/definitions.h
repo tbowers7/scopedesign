@@ -36,19 +36,22 @@
 #define OPTIC_NFP 26        // Newtonian Focal Plane
 
 
+
 /* Typedef structures needed */
 
 // "Ray", including position, direction, wavelength & lost flag
 typedef struct{
-  double x;
-  double y;
-  double z;
-  double vx;
-  double vy;
-  double vz;
-  double lambda;
-  int lost;
+  double x;        // Position with ray-trace environment
+  double y;        // 
+  double z;        // 
+  double vx;       // Direction (unit vector)
+  double vy;       // 
+  double vz;       // 
+  double lambda;   // Wavelength
+  int lost=0;      // Indicates whether a ray has been "lost"
 } scope_ray;
+
+
 
 
 /* Function declarations */
