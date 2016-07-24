@@ -23,6 +23,10 @@
  *
  */
 
+#ifndef DEFINITOINS_H
+#define DEFINITIONS_H
+
+
 /* Define values to be used */
 #define N_RAYS 100000       // Number of rays to be used
 
@@ -52,9 +56,4 @@ typedef struct{
 } scope_ray;
 
 
-
-
-/* Function declarations */
-
-#include "illumination.h"
-#include "rays.h"
+#endif /* DEFINITIONS_H */

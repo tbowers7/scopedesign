@@ -23,10 +23,17 @@
  *
  */
 
-/* Include packages */
 
-#include <fitsio.h>
-#include <tpeb/fits_wrap.h>
+#ifndef ILLUMINATION_H
+#define ILLUMINATION_H
+
 
 /* Function declarations */
 void write_focal_plane();
+
+
+
+#endif  /* ILLUMINATION_H */
+
+
+

@@ -23,6 +23,11 @@
  *
  */
 
+/* Include packages */
+#include "definitions.h"
+
+#include <fitsio.h>
+#include <tpeb/fits_wrap.h>
 
 
 int write_focal_plane(){

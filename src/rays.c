@@ -23,8 +23,17 @@
  *
  */
 
-#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+#include "definitions.h"
 
+/* Include packages */
+#include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
+#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
+
+
+
+
+
+#include "rays.h"
 
 int initialize_rays(){
   

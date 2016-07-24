@@ -23,8 +23,13 @@
  *
  */
 
-/* Include packages */
+#ifndef RAYS_H
+#define RAYS_H
 
 
 /* Function declarations */
 int initialize_rays();
+
+
+
+#endif  /* RAYS_H */

@@ -28,7 +28,6 @@
 #include <string.h>
 #include <math.h>
 //#include <argtable2.h>
-//#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
 #include "definitions.h"
 
 void print_usage();                    // Delaration for print_usage() function
