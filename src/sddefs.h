@@ -52,8 +52,14 @@ typedef struct{
   double vy;       // 
   double vz;       // 
   double lambda;   // Wavelength
-  int lost=0;      // Indicates whether a ray has been "lost"
+  int lost;        // Indicates whether a ray has been "lost"
 } scope_ray;
+
+
+
+/* Include the various local headers */
+#include "rays.h"
+#include "illumination.h"
 
 
 #endif /* SDDEFS_H */
