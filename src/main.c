@@ -28,7 +28,7 @@
 #include <string.h>
 #include <math.h>
 //#include <argtable2.h>
-#include "definitions.h"
+#include "sddefs.h"
 
 void print_usage();                    // Delaration for print_usage() function
 

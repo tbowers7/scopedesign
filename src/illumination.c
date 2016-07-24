@@ -24,7 +24,7 @@
  */
 
 /* Include packages */
-#include "definitions.h"
+#include "sddefs.h"
 
 #include <fitsio.h>
 #include <tpeb/fits_wrap.h>

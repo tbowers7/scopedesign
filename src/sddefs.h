@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  * 
- * FILE: definitions.h
+ * FILE: sddefs.h
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef DEFINITOINS_H
-#define DEFINITIONS_H
+#ifndef SDDEFS_H
+#define SDDEFS_H
 
 
 /* Define values to be used */
@@ -56,4 +56,4 @@ typedef struct{
 } scope_ray;
 
 
-#endif /* DEFINITIONS_H */
+#endif /* SDDEFS_H */
