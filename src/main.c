@@ -71,10 +71,10 @@ int main(int argc, char *argv[])
   int wfp_stat=0,ir_stat=0;               // Status variables
 
   
-  ir_stat  = initialize_rays;
-  wfp_stat = write_focal_plane;
+  ir_stat  = initialize_rays();
+  wfp_stat = write_focal_plane();
   
-  printf("Everything's fine!\n");
+  printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);
   
   
   /* Test code from the JUPITER project */

@@ -32,7 +32,6 @@
 
 
 
-
 #include "rays.h"
 
 int initialize_rays(){
@@ -41,8 +40,12 @@ int initialize_rays(){
   int i;
   scope_ray *rays,normal,g,det_plane;
   
-  rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
+  printf("We're in rays.c...\n");
   
+  rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
+  /* for(i=0;i<N_RAYS;i++){ */
+  /*   printf("%d\n",rays[i].lost); */
+  /* } */
   
   /* Setup GSL's RNG */
   
@@ -61,6 +64,7 @@ int initialize_rays(){
   /* Clean up */
   gsl_rng_free(r);
   
+  return 1;
   
 }
 

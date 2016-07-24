@@ -31,7 +31,7 @@ VPATH          = @srcdir@
 all: scopedesign
 
 scopedesign: main.c sddefs.h illumination.c illumination.h rays.c rays.h
-	$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -I. -I$(srcdir) -I.. -o $@ $(srcdir)/main.c $(LIBS)
+	$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -I. -I$(srcdir) -I.. -o $@ $(srcdir)/main.c $(srcdir)/rays.c $(srcdir)/illumination.c $(LIBS)
 
 clean:
 	-rm scopedesign &>/dev/null

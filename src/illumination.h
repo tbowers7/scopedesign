@@ -29,7 +29,7 @@
 
 
 /* Function declarations */
-void write_focal_plane();
+int write_focal_plane();
 
 
 
