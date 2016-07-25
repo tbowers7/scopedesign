@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([scopedesign], [0.1.0], [tbowers@email.arizona.edu])
+AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
@@ -53,7 +54,9 @@ if test "x${have_fitsio}" = xyes; then
    AC_CHECK_HEADERS([fitsio.h],[],[have_fitsio=no])
 fi
 if test "x${have_fitsio}" = xno; then
-   echo "No FITSIO found!"
+    echo "---------------------------------------"
+    echo "WARNING:  No CFITSIO Library found!    "
+    echo "---------------------------------------"
 fi
 
 # Checks for header files.
