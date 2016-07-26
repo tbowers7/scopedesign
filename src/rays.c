@@ -23,7 +23,7 @@
  *
  */
 
-#include "sddefs.h"
+#include "sd_defs.h"
 
 /* Include packages */
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs

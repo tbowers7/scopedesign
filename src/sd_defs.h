@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  * 
- * FILE: sddefs.h
+ * FILE: sd_defs.h
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef SDDEFS_H
-#define SDDEFS_H
+#ifndef SD_DEFS_H
+#define SD_DEFS_H
 
 
 /* Define values to be used */
@@ -62,4 +62,4 @@ typedef struct{
 #include "illumination.h"
 
 
-#endif /* SDDEFS_H */
+#endif /* SD_DEFS_H */
