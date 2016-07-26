@@ -42,14 +42,17 @@ if test "x${async_exec}" = xyes; then
   AC_DEFINE([ASYNC_EXEC], 1, [async exec enabled])
 fi
 
-# Check for GSL_RNG
-AC_SEARCH_LIBS([gsl_rng_env_setup],[gsl],[have_gsl_rng=yes])
-if test "x${have_gsl_rng}" = xyes; then
-   AC_CHECK_HEADERS([gsl/gsl_rng.h],[],[have_gsl_rng=no])
-fi
+# Check for GSL (code from the GSL manual)
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
+AC_CHECK_FUNCS(hypot)
+
+
 
 # Check for CFITSIO
-AC_SEARCH_LIBS([fits_open_file],[cfitsio],[have_fitsio=yes],[have_fitsio=no])
+AC_CHECK_LIB([cfitsio],[fits_open_file],[have_fitsio=yes],[have_fitsio=no])
 if test "x${have_fitsio}" = xyes; then
    AC_CHECK_HEADERS([fitsio.h],[],[have_fitsio=no])
 fi
