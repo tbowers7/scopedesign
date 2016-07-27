@@ -3,14 +3,23 @@
 /* async exec enabled */
 #undef ASYNC_EXEC
 
-/* Define to 1 if you have the <fitsio.h> header file. */
-#undef HAVE_FITSIO_H
+/* Define to 1 if you have the <fftw3.h> header file. */
+#undef HAVE_FFTW3_H
 
 /* Define to 1 if you have the `hypot' function. */
 #undef HAVE_HYPOT
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `argtable2' library (-largtable2). */
+#undef HAVE_LIBARGTABLE2
+
+/* Define to 1 if you have the `cfitsio' library (-lcfitsio). */
+#undef HAVE_LIBCFITSIO
+
+/* Define to 1 if you have the `fftw3' library (-lfftw3). */
+#undef HAVE_LIBFFTW3
 
 /* Define to 1 if you have the `gsl' library (-lgsl). */
 #undef HAVE_LIBGSL
@@ -20,6 +29,9 @@
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
+
+/* Define to 1 if you have the `tpeb' library (-ltpeb). */
+#undef HAVE_LIBTPEB
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
