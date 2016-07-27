@@ -26,19 +26,26 @@
 /* Include packages */
 #include "sd_defs.h"
 
-#include <fitsio.h>
-#include <tpeb/fits_wrap.h>
+#ifndef HAVE_FITSIO_H
+#define HAVE_FITSIO_H
+#include <fitsio.h>       // Contains CFITSIO function declarations
+#endif
 
+#ifndef HAVE_TPEB_H
+#define HAVE_TPEB_H
+#include <tpeb.h>         // Contains TPEB Library function declarations
+#endif
 
 int write_focal_plane(){
   
   char *fn="filename";
   char *hd="hd";
-  double **array,**size;
+  double **array;
+  long size[2];
   int status=0;
   
   
-  //fits_wrap_write2file(fn, hd,  array,size, &status);
+  fits_wrap_write2file(fn, hd,  array, size, &status);
   
   return status;
   
