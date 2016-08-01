@@ -24,7 +24,7 @@
  */
 
 /* Include packages */
-#include "sd_defs.h"
+#include "sd_defs.h"      // Contains header information for scopedesign
 
 #ifndef HAVE_FITSIO_H
 #define HAVE_FITSIO_H
@@ -44,8 +44,9 @@ int write_focal_plane(){
   long size[2];
   int status=0;
   
+  printf("We're in illumunation.c...\n");
   
-  fits_wrap_write2file(fn, hd,  array, size, &status);
+  fitswrap_write2file(fn, hd,  array, size, &status);
   
   return status;
   
