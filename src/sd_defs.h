@@ -40,6 +40,20 @@
 #define OPTIC_SF  25        // Rowland Circle Spectral Focus
 #define OPTIC_NFP 26        // Newtonian Focal Plane
 
+/* Define symbolic integers for TYPE of optical element */
+#define OPTIC_PLANE    501     // Plane Mirror
+#define OPTIC_PARABOLA 502     // Parabolic Mirror
+#define OPTIC_SHPERE   503     // Spherical Mirror
+#define OPTIC_HYPER    504     // Hyperbolic Mirror
+#define OPTIC_CONVER   505     // Converging Lens
+#define OPTIC_DIVER    506     // Diverging Lens
+
+/* Define symbolic integers for NHAT of optical elements                     */
+/* Used to specify which direction rays should be seen to intercept element. */
+#define NHAT_X 521     // Optical element is primarily normal to X
+#define NHAT_Y 522     // Optical element is primarily normal to Y
+#define NHAT_Z 523     // Optical element is primarily normal to Z
+
 
 
 /* Typedef structures needed */
@@ -59,28 +73,42 @@ typedef struct{
 
 // Geometry of the problem, built as a structure for easier passing
 typedef struct{
-  double f;
-  double b;
-  double v;
-  double e;
-  double Dp;
-  double Ds;
-  double Rrc;
-  double alpha;          // In radians
-  double d;
+  double f;      // Focal Length of Primary
+  double b;      // Back-plane distance (Focal plane, behind primary vertex)
+  double v;      // Distance of primary vertex from 'starting point' (arb)
+  double e;      // From focal-ratios: eps = (final+pri)/(final-pri)
+  double Dp;     // Primary diameter
+  double Ds;     // Secondary diameter (on-axis)
+  double Rrc;    // Diameter of Rowland Circle = radius of grating curvature
+  double alpha;  // In radians
+  double d;      // lines/mm converted to Angstroms per line
 } raytrace_geom;
+
+
+// General Geometry for ScopeDesign Consumption
+typedef struct{
+  double a;      // Space-filler
+} scope_geom;
+
+// Optical Element Geometry
+typedef struct{
+  int type;      // TYPE of optical element (plane, parabola, etc.)
+  double f;      // Focal Length of Optical Element
+  double d;      // Diameter of Optical Element
+  double cx;     // x-position of center of element
+  double cy;     // y-position of center of element
+  double cz;     // z-position of center of element
+  int nhat;      // Primary (x,y,z) direction in which n-hat is pointing
+} scope_optic;
+
 
 // Parameters needed for passing to the GSL root-finding functions
 typedef struct{
   scope_ray ray;
   raytrace_geom geom;
   int surf;
-} raytrace_root_params;
+} scope_root_params;
 
-
-/* Include the various local headers */
-#include "rays.h"
-#include "illumination.h"
 
 
 #endif /* SD_DEFS_H */

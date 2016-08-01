@@ -31,6 +31,11 @@
 
 #include "sd_defs.h"
 
+/* Test Code */
+#include "rays.h"
+#include "illumination.h"
+/* Test Code */
+
 void print_usage();                    // Delaration for print_usage() function
 
 
@@ -73,7 +78,7 @@ int main(int argc, char *argv[])
   
   
   /* TEST CODE */
-  ir_stat  = initialize_rays();
+  ir_stat  = rays_initialize();
   wfp_stat = write_focal_plane();
   
   printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);

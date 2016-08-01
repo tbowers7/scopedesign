@@ -35,7 +35,7 @@
 
 #include "rays.h"
 
-int initialize_rays(){
+int rays_initialize(){
   
   /* Variable Declarations */
   int i;
@@ -82,7 +82,7 @@ double raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf){
   double x_lo = 0.0, x_hi = 5.0;
   gsl_function F;
   
-  raytrace_root_params params = {ray, geom, surf}; 
+  scope_root_params params = {ray, geom, surf}; 
   
   /* If w/in Rowland Circle, reduce x_hi to 2.1 */
   if(surf == OPTIC_SF) x_hi = 2.1;
@@ -115,7 +115,7 @@ double raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf){
 
 double raytrace_distroot(double t, void *params){
 
-  raytrace_root_params *p = (raytrace_root_params *)params; 
+  scope_root_params *p = (scope_root_params *)params; 
 
   double x1 = p->ray.x;
   double y1 = p->ray.y;
