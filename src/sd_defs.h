@@ -27,6 +27,7 @@
 #define SD_DEFS_H
 
 
+
 /* Define values to be used */
 #define N_RAYS 100000       // Number of rays to be used
 
@@ -55,6 +56,26 @@ typedef struct{
   int lost;        // Indicates whether a ray has been "lost"
 } scope_ray;
 
+
+// Geometry of the problem, built as a structure for easier passing
+typedef struct{
+  double f;
+  double b;
+  double v;
+  double e;
+  double Dp;
+  double Ds;
+  double Rrc;
+  double alpha;          // In radians
+  double d;
+} raytrace_geom;
+
+// Parameters needed for passing to the GSL root-finding functions
+typedef struct{
+  scope_ray ray;
+  raytrace_geom geom;
+  int surf;
+} raytrace_root_params;
 
 
 /* Include the various local headers */

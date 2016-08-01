@@ -61,31 +61,55 @@ static void * print_it(void * data)
 /* Test code from the JUPITER project */
 
 
-
-
+/* ================= */
+/*   MAIN FUNCTION   */
+/* ================= */
 
 int main(int argc, char *argv[])
 {
-
+  
   /* Variable Declarations */
   int wfp_stat=0,ir_stat=0;               // Status variables
-
   
+  
+  /* TEST CODE */
   ir_stat  = initialize_rays();
   wfp_stat = write_focal_plane();
   
   printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);
+  /* TEST CODE */
+  
+  
+  
+  /************ CODE OUTLINE ************/
+  /* 
+     1.  Set up the geometry of the telescope (optic location, shape, etc.)
+     2.  Set up the illumination environment (point source, flat, image, etc.)
+     3.  Initialize the rays based on illumination environment.
+     4.  Propagate the rays through the system.
+     4a. Check if rays hit obstructing elements and/or connect with next element
+     4b. Reflect / Refract ray off / through element.
+     4c. Propagate ray to next element, repeating 4a-4c.
+     5.  At each element / pupil, record illumination pattern, if requested.
+     6.  Allow for adustment of #1 or #2 and re-run of program.
+     7.  Other?
+  */
+  
+  
+  
+  
+  
+  
+  
   
   
   /* Test code from the JUPITER project */
-  //
-
+  
   pthread_t tid;
   pthread_create(&tid, 0, print_it, argv[0]);	
   pthread_join(tid, 0);
   printf("We went down path #1.\n");
-
-  //
+  
   /* Test code from the JUPITER project */
   
   

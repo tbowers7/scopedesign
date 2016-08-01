@@ -28,7 +28,12 @@
 
 
 /* Function declarations */
-int initialize_rays();
+int       initialize_rays();
+double    raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf);
+double    raytrace_distroot(double t, void *params);
+void      raytrace_advance_ray(scope_ray *beam, double d);
+scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf);
+void      raytrace_reflect(scope_ray *a, scope_ray n);
 
 
 
