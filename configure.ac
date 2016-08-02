@@ -14,6 +14,7 @@ AC_PROG_MAKE_SET
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h])
+AC_CHECK_HEADER_STDBOOL
 
 # Checks for library functions.
 AC_FUNC_MALLOC
