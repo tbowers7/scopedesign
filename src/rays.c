@@ -28,7 +28,6 @@
 /* Include packages */
 #include <math.h>
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
-#include <gsl/gsl_math.h>              // Includes the gsl_hypot3() function
 #include <gsl/gsl_roots.h>             // Includes GSL's root-finder algorithms
 
 
@@ -229,7 +228,7 @@ scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
       
 
     /* Normalization */
-    norm = gsl_hypot3(xg-x, yg-y, zg- z);
+    norm = hypot3(xg-x, yg-y, zg- z);
     
     n.x = (xg - x) / norm;
     n.y = (yg - y) / norm;
@@ -254,7 +253,7 @@ scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
     n.z = -(zg - z) * (Rt - xz_rad) / xz_rad;
     
     /* Normalization */
-    norm = gsl_hypot3(n.x, n.y, n.z);
+    norm = hypot3(n.x, n.y, n.z);
 
     n.x /= norm;
     n.y /= norm;

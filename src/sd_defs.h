@@ -27,6 +27,13 @@
 #define SD_DEFS_H
 
 
+/* Include various GSL functions, defined as local */
+#include <gsl/gsl_math.h>
+#define hypot3 gsl_hypot3
+#define nan    gsl_nan
+#define posinf gsl_posinf
+#define neginf gsl_neginf
+
 
 /* Define values to be used */
 #define N_RAYS 100000       // Number of rays to be used
@@ -53,6 +60,10 @@
 #define NHAT_X 521     // Optical element is primarily normal to X
 #define NHAT_Y 522     // Optical element is primarily normal to Y
 #define NHAT_Z 523     // Optical element is primarily normal to Z
+
+
+
+
 
 
 
@@ -98,7 +109,10 @@ typedef struct{
   double cx;     // x-position of center of element
   double cy;     // y-position of center of element
   double cz;     // z-position of center of element
-  int nhat;      // Primary (x,y,z) direction in which n-hat is pointing
+  double nx;     // N_x for center of element
+  double ny;     // N_y for center of element
+  double nz;     // N_z for center of element
+  int nhat;      // Primary direction of nhat - set by setup_orient_optic()
 } scope_optic;
 
 

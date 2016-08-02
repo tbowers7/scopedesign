@@ -34,6 +34,7 @@
 /* Test Code */
 #include "rays.h"
 #include "illumination.h"
+#include "setup.h"
 /* Test Code */
 
 void print_usage();                    // Delaration for print_usage() function
@@ -79,7 +80,7 @@ int main(int argc, char *argv[])
   
   /* TEST CODE */
   ir_stat  = rays_initialize();
-  wfp_stat = write_focal_plane();
+  //  wfp_stat = write_focal_plane();
   
   printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);
   /* TEST CODE */
@@ -101,10 +102,17 @@ int main(int argc, char *argv[])
   */
   
   
+  /* Make test optic */
+  int ss=0;
+  scope_optic optic;
   
+  optic.nx = 0.0;
+  optic.ny = 0.0;
+  optic.nz = -1.0;
   
-  
-  
+  ss = setup_orient_optic(&optic);
+  /* Add error check for status = -1 */
+  printf("Value of status, NHAT: %d, %d\n",ss,optic.nhat);
   
   
   
