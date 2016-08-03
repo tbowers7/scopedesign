@@ -30,6 +30,7 @@
 //#include <argtable2.h>
 
 #include "sd_defs.h"
+#include <config.h>
 
 /* Test Code */
 #include "rays.h"
@@ -67,12 +68,29 @@ static void * print_it(void * data)
 /* Test code from the JUPITER project */
 
 
+/* Try to open DS9 in a separate thread */
+static void * open_ds9(void * command)
+{
+  
+  printf("%s\n",command);
+  system(command);                  // Execute the command
+  
+  
+}
+
 /* ================= */
 /*   MAIN FUNCTION   */
 /* ================= */
 
 int main(int argc, char *argv[])
 {
+  
+  /* Test the execution of ds9 */
+  printf("From config.h, path to ds9: %s\n",DS9_PATH);
+  char command[500];
+  sprintf(command,"%s",DS9_PATH);   // Place the command into the varaible
+  pthread_t tid1;
+  pthread_create(&tid1, 0, open_ds9, command);	
   
   /* Variable Declarations */
   int wfp_stat=0,ir_stat=0;               // Status variables
@@ -116,6 +134,8 @@ int main(int argc, char *argv[])
   
   
   
+  
+  
   /* Test code from the JUPITER project */
   
   pthread_t tid;
@@ -128,7 +148,8 @@ int main(int argc, char *argv[])
   
   
   
-  
+  pthread_join(tid1, 0);  // Join back the ds9 thread before quit.
+
   return 0;
 }
 

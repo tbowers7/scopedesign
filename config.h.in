@@ -3,6 +3,9 @@
 /* async exec enabled */
 #undef ASYNC_EXEC
 
+/* Callable ds9 Path */
+#undef DS9_PATH
+
 /* Define to 1 if you have the <fftw3.h> header file. */
 #undef HAVE_FFTW3_H
 

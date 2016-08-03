@@ -240,12 +240,15 @@ dnl =============================================================
 
 
 # Check for installed DS9 for display of FITS images produced by the program
+# If no DS9 found, then exit configuration
 AC_MSG_RESULT( Checking for a FITS display utility ====================)
-AC_CHECK_PROG([have_ds9],[ds9],[yes],[no])
-if test "x${have_ds9}" = xno; then
-   echo "No DS9 found!"
+AC_PATH_PROG([ds9_path],[ds9],[no]) 
+if test "x${ds9_path}" = xno; then
+   echo         "--------------------------------------------------"
+   AC_MSG_ERROR("The FITS viewer DS9 not found!  Install DS9 first!")
+else
+   AC_DEFINE_UNQUOTED([DS9_PATH],["$ds9_path"],[Callable ds9 Path])	
 fi
-
 
 
 AC_CONFIG_FILES([Makefile
