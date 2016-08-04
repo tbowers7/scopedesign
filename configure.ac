@@ -250,9 +250,33 @@ else
    AC_DEFINE_UNQUOTED([DS9_PATH],["$ds9_path"],[Callable ds9 Path])	
 fi
 
+# Make sure data directory is included in the config.h file!
+# Lifted from the nightfall OSS package
+mydataroot="${datadir}/${PACKAGE}"
+AC_SUBST(mydataroot)
+my_save_prefix="${prefix}"
+if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+else
+    prefix="$prefix"
+fi
+PREFIX=`eval echo ${prefix}` ;          PREFIX=`eval echo ${PREFIX}`
+AC_DEFINE_UNQUOTED([PREFIX], ["$PREFIX"], [Installation prefix])
+dnl SYSCONFDIR=`eval echo ${sysconfdir}` ;  SYSCONFDIR=`eval echo ${SYSCONFDIR}`
+dnl AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$SYSCONFDIR"], [Installation sysconfdir])
+DATADIR=`eval echo ${mydataroot}` ;     DATADIR=`eval echo ${DATADIR}`
+AC_DEFINE_UNQUOTED([DATADIR], ["$DATADIR"], [Installation datadir])
+dnl LIBDIR=`eval echo ${libdir}` ;          LIBDIR=`eval echo ${LIBDIR}`
+dnl AC_DEFINE_UNQUOTED([LIBDIR], ["$LIBDIR"], [Installation libdir])
+dnl GDOCDIR=`eval echo ${mygdocdir}` ;          GDOCDIR=`eval echo ${GDOCDIR}`
+dnl AC_DEFINE_UNQUOTED([GDOCDIR], ["$GDOCDIR"], [Installation gnome_param_app_datadir])
+prefix="${my_save_prefix}"
+
+
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+		 data/Makefile])
 AC_OUTPUT
 
 echo \

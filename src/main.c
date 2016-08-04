@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   /* Test the execution of ds9 */
   printf("From config.h, path to ds9: %s\n",DS9_PATH);
   char command[500];
-  sprintf(command,"%s",DS9_PATH);   // Place the command into the varaible
+  sprintf(command,"%s %s/new-image.fits -dsssao frame new -frame lock wcs -frame first",DS9_PATH,DATADIR);   // Place the command into the varaible
   pthread_t tid1;
   pthread_create(&tid1, 0, open_ds9, command);	
   

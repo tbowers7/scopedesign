@@ -3,6 +3,9 @@
 /* async exec enabled */
 #undef ASYNC_EXEC
 
+/* Installation datadir */
+#undef DATADIR
+
 /* Callable ds9 Path */
 #undef DS9_PATH
 
@@ -93,6 +96,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Installation prefix */
+#undef PREFIX
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
