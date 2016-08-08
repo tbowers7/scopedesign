@@ -120,20 +120,16 @@ int main(int argc, char *argv[])
       /* NULL entries were detected, some allocations must have failed */
       printf("%s: insufficient memory\n",progname);
       exitcode=1;
-      goto exit;
     }
   
-  
- exit:
   /* deallocate each non-null entry in argtable[] */
   arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
   
-  return exitcode;
+  printf("ARGTABLE exit code: %d\n",exitcode);
+  /* TEST ARGTABLE */
   
-  /*
-    
-
- 
+  
+  
   /* TEST CODE */
   ir_stat  = rays_initialize();
   //  wfp_stat = write_focal_plane();
