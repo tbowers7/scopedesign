@@ -6,10 +6,12 @@ AC_INIT([scopedesign], [0.1.1], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_PROG_LIBTOOL     dnl Needed by ARGTABLE
 AC_PROG_MAKE_SET
 
 # Checks for header files.
@@ -21,7 +23,30 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([sqrt])
 AC_CHECK_FUNCS(hypot)
 
+dnl =======================================================================
+dnl Checks from ARGTABLE
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h])
 
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_STRUCT_TM
+
+# Checks for library functions.
+AC_FUNC_STRFTIME
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([bzero strchr strcspn strrchr strtol])
+AC_CHECK_FUNC(getopt_long, SYS_GETOPTLONG=1, SYS_GETOPTLONG=0)
+AC_CHECK_FUNC(regcomp,     SYS_REGEX=1,      SYS_REGEX=0)
+AC_CHECK_FUNC(strptime,    SYS_STRPTIME=1,   SYS_STRPTIME=0)
+
+# Define automake conditionals
+AM_CONDITIONAL(USE_SYS_GETOPTLONG, test "$SYS_GETOPTLONG" = "1")
+AM_CONDITIONAL(USE_ARGREX,         test "$SYS_REGEX" = "1")
+AM_CONDITIONAL(USE_ARGDATE,        test "$SYS_STRPTIME" = "1")
+dnl =======================================================================
 
 # Checks for command line options
 AC_ARG_ENABLE([async-exec],
@@ -276,6 +301,7 @@ prefix="${my_save_prefix}"
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 libargtable/Makefile
 		 data/Makefile])
 AC_OUTPUT
 
