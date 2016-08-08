@@ -2,6 +2,7 @@ lib_LTLIBRARIES = libargtable2.la
 
 libargtable2_la_SOURCES = argtable2.c arg_end.c arg_rem.c arg_lit.c arg_int.c arg_dbl.c \
 			arg_str.c arg_file.c
+EXTRA_DIST = AUTHORS COPYING ChangeLog README
 
 #libtool library versioning uses current:revision:age where
 #   current  = most recent interface number
