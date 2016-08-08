@@ -27,7 +27,7 @@
 //#include <stdlib.h>
 //#include <string.h>
 //#include <math.h>
-//#include <argtable2.h>
+#include <argtable2.h>
 
 #include "sd_defs.h"
 #include <config.h>
@@ -96,6 +96,44 @@ int main(int argc, char *argv[])
   int wfp_stat=0,ir_stat=0;               // Status variables
   
   
+  
+  /* TEST ARGTABLE */
+  struct arg_lit  *list    = arg_lit0("lL",NULL,                      "list files");
+  struct arg_lit  *recurse = arg_lit0("R",NULL,                       "recurse through subdirectories");
+  struct arg_int  *repeat  = arg_int0("k","scalar",NULL,              "define scalar value k (default is 3)");
+  struct arg_str  *defines = arg_strn("D","define","MACRO",0,argc+2,  "macro definitions");
+  struct arg_file *outfile = arg_file0("o",NULL,"<output>",           "output file (default is \"-\")");
+  struct arg_lit  *verbose = arg_lit0("v","verbose,debug",            "verbose messages");
+  struct arg_lit  *help    = arg_lit0(NULL,"help",                    "print this help and exit");
+  struct arg_lit  *version = arg_lit0(NULL,"version",                 "print version information and exit");
+  struct arg_file *infiles = arg_filen(NULL,NULL,NULL,1,argc+2,       "input file(s)");
+  struct arg_end  *end     = arg_end(20);
+  void* argtable[] = {list,recurse,repeat,defines,outfile,verbose,help,version,infiles,end};
+  const char* progname = "myprog";
+  int nerrors;
+  int exitcode=0;
+  
+  
+  /* verify the argtable[] entries were allocated sucessfully */
+  if (arg_nullcheck(argtable) != 0)
+    {
+      /* NULL entries were detected, some allocations must have failed */
+      printf("%s: insufficient memory\n",progname);
+      exitcode=1;
+      goto exit;
+    }
+  
+  
+ exit:
+  /* deallocate each non-null entry in argtable[] */
+  arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
+  
+  return exitcode;
+  
+  /*
+    
+
+ 
   /* TEST CODE */
   ir_stat  = rays_initialize();
   //  wfp_stat = write_focal_plane();

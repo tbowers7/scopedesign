@@ -11,8 +11,8 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL     dnl Needed by ARGTABLE
 AC_PROG_MAKE_SET
+AC_PROG_RANLIB          dnl Needed by ARGTABLE
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h])
@@ -181,43 +181,43 @@ AC_CHECK_HEADER(fitsio.h,,
       AC_MSG_ERROR("Can't find cfitsio includes; use --with-cfitsioinc")
    fi ] )
 
-dnl =============================================================
-# Check for ARGTABLE2 library and headers
-AC_LANG_C
+dnl dnl =============================================================
+dnl # Check for ARGTABLE2 library and headers
+dnl AC_LANG_C
 
-AC_ARG_WITH( argtable2lib, 
-        [  --with-argtable2lib=DIR   DIR=-LDIR, has libargtable2.a],
-        argtable2lib="$withval/" , argtable2lib= )
-if test $argtable2lib; then
-  if test $rpathset; then
-          LDFLAGS="$LDFLAGS -L$argtable2lib -Wl,--rpath -Wl,$argtable2lib"
-  else
-       LDFLAGS="$LDFLAGS -L$argtable2lib"
-  fi
-fi
+dnl AC_ARG_WITH( argtable2lib, 
+dnl         [  --with-argtable2lib=DIR   DIR=-LDIR, has libargtable2.a],
+dnl         argtable2lib="$withval/" , argtable2lib= )
+dnl if test $argtable2lib; then
+dnl   if test $rpathset; then
+dnl           LDFLAGS="$LDFLAGS -L$argtable2lib -Wl,--rpath -Wl,$argtable2lib"
+dnl   else
+dnl        LDFLAGS="$LDFLAGS -L$argtable2lib"
+dnl   fi
+dnl fi
 
-AC_MSG_RESULT( Checking ARGTABLE2 Library =============================)
+dnl AC_MSG_RESULT( Checking ARGTABLE2 Library =============================)
 
-# Check for ARGTABLE2 library first
-AC_CHECK_LIB(argtable2,main,,
-         [AC_MSG_ERROR("Can't find libargtable2; use --with-argtable2lib")], 
-            [-lm "-L$argtable2lib"])
+dnl # Check for ARGTABLE2 library first
+dnl AC_CHECK_LIB(argtable2,main,,
+dnl          [AC_MSG_ERROR("Can't find libargtable2; use --with-argtable2lib")], 
+dnl             [-lm "-L$argtable2lib"])
 
-# Check for ARGTABLE2 header next
-AC_ARG_WITH(argtable2inc,
-     [  --with-argtable2inc=VAL   VAL=-IVAL, has argtable2 include files ],
-        [argtable2inc="$withval/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
-     [argtable2inc=] )
-AC_CHECK_HEADER(argtable2.h,,
-  [ if test $argtable2inc; then
-   AC_MSG_ERROR("argtable2 headers not in location specified by --with-argtable2inc")
-   elif test $argtable2lib; then
-    AC_CHECK_HEADER($argtable2lib/../include/argtable2.h,
-     [argtable2inc="$argtable2lib/../include/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
-      AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc"))
-    else
-      AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc")
-   fi ] )
+dnl # Check for ARGTABLE2 header next
+dnl AC_ARG_WITH(argtable2inc,
+dnl      [  --with-argtable2inc=VAL   VAL=-IVAL, has argtable2 include files ],
+dnl         [argtable2inc="$withval/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
+dnl      [argtable2inc=] )
+dnl AC_CHECK_HEADER(argtable2.h,,
+dnl   [ if test $argtable2inc; then
+dnl    AC_MSG_ERROR("argtable2 headers not in location specified by --with-argtable2inc")
+dnl    elif test $argtable2lib; then
+dnl     AC_CHECK_HEADER($argtable2lib/../include/argtable2.h,
+dnl      [argtable2inc="$argtable2lib/../include/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
+dnl       AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc"))
+dnl     else
+dnl       AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc")
+dnl    fi ] )
 
 
 dnl =============================================================
