@@ -6,7 +6,6 @@ AC_INIT([scopedesign], [0.1.1], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CC
@@ -15,19 +14,9 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB          dnl Needed by ARGTABLE
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdlib.h string.h])
-AC_CHECK_HEADER_STDBOOL
-
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([sqrt])
-AC_CHECK_FUNCS(hypot)
-
-dnl =======================================================================
-dnl Checks from ARGTABLE
-# Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h])
+AC_CHECK_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -35,6 +24,8 @@ AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
 # Checks for library functions.
+AC_FUNC_MALLOC
+AC_CHECK_FUNCS([sqrt hypot])
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([bzero strchr strcspn strrchr strtol])
@@ -46,7 +37,7 @@ AC_CHECK_FUNC(strptime,    SYS_STRPTIME=1,   SYS_STRPTIME=0)
 AM_CONDITIONAL(USE_SYS_GETOPTLONG, test "$SYS_GETOPTLONG" = "1")
 AM_CONDITIONAL(USE_ARGREX,         test "$SYS_REGEX" = "1")
 AM_CONDITIONAL(USE_ARGDATE,        test "$SYS_STRPTIME" = "1")
-dnl =======================================================================
+
 
 # Checks for command line options
 AC_ARG_ENABLE([async-exec],
@@ -86,13 +77,12 @@ AC_ARG_ENABLE([need-fft],
   [need_fft=no])
 
 
+dnl =============================================================
 # Check for GSL (code from the GSL manual)
 AC_MSG_RESULT( Checking GSL Library ===================================)
 AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
-
-
 
 dnl =============================================================
 dnl Checking Code from Alex's pofd_fitter
@@ -181,44 +171,6 @@ AC_CHECK_HEADER(fitsio.h,,
       AC_MSG_ERROR("Can't find cfitsio includes; use --with-cfitsioinc")
    fi ] )
 
-dnl dnl =============================================================
-dnl # Check for ARGTABLE2 library and headers
-dnl AC_LANG_C
-
-dnl AC_ARG_WITH( argtable2lib, 
-dnl         [  --with-argtable2lib=DIR   DIR=-LDIR, has libargtable2.a],
-dnl         argtable2lib="$withval/" , argtable2lib= )
-dnl if test $argtable2lib; then
-dnl   if test $rpathset; then
-dnl           LDFLAGS="$LDFLAGS -L$argtable2lib -Wl,--rpath -Wl,$argtable2lib"
-dnl   else
-dnl        LDFLAGS="$LDFLAGS -L$argtable2lib"
-dnl   fi
-dnl fi
-
-dnl AC_MSG_RESULT( Checking ARGTABLE2 Library =============================)
-
-dnl # Check for ARGTABLE2 library first
-dnl AC_CHECK_LIB(argtable2,main,,
-dnl          [AC_MSG_ERROR("Can't find libargtable2; use --with-argtable2lib")], 
-dnl             [-lm "-L$argtable2lib"])
-
-dnl # Check for ARGTABLE2 header next
-dnl AC_ARG_WITH(argtable2inc,
-dnl      [  --with-argtable2inc=VAL   VAL=-IVAL, has argtable2 include files ],
-dnl         [argtable2inc="$withval/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
-dnl      [argtable2inc=] )
-dnl AC_CHECK_HEADER(argtable2.h,,
-dnl   [ if test $argtable2inc; then
-dnl    AC_MSG_ERROR("argtable2 headers not in location specified by --with-argtable2inc")
-dnl    elif test $argtable2lib; then
-dnl     AC_CHECK_HEADER($argtable2lib/../include/argtable2.h,
-dnl      [argtable2inc="$argtable2lib/../include/" CPPFLAGS="$CPPFLAGS -I$argtable2inc"],
-dnl       AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc"))
-dnl     else
-dnl       AC_MSG_ERROR("Can't find argtable2 includes; use --with-argtable2inc")
-dnl    fi ] )
-
 
 dnl =============================================================
 # Check for TPEB library and headers
@@ -257,11 +209,8 @@ AC_CHECK_HEADER(tpeb.h,,
       AC_MSG_ERROR("Can't find tpeb includes; use --with-tpebinc")
    fi ] )
 
-
 dnl =============================================================
 
-
-# Checks for typedefs, structures, and compiler characteristics.
 
 
 # Check for installed DS9 for display of FITS images produced by the program
@@ -275,8 +224,8 @@ else
    AC_DEFINE_UNQUOTED([DS9_PATH],["$ds9_path"],[Callable ds9 Path])	
 fi
 
+dnl === Lifted from the nightfall OSS package
 # Make sure data directory is included in the config.h file!
-# Lifted from the nightfall OSS package
 mydataroot="${datadir}/${PACKAGE}"
 AC_SUBST(mydataroot)
 my_save_prefix="${prefix}"
@@ -287,18 +236,13 @@ else
 fi
 PREFIX=`eval echo ${prefix}` ;          PREFIX=`eval echo ${PREFIX}`
 AC_DEFINE_UNQUOTED([PREFIX], ["$PREFIX"], [Installation prefix])
-dnl SYSCONFDIR=`eval echo ${sysconfdir}` ;  SYSCONFDIR=`eval echo ${SYSCONFDIR}`
-dnl AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$SYSCONFDIR"], [Installation sysconfdir])
 DATADIR=`eval echo ${mydataroot}` ;     DATADIR=`eval echo ${DATADIR}`
 AC_DEFINE_UNQUOTED([DATADIR], ["$DATADIR"], [Installation datadir])
-dnl LIBDIR=`eval echo ${libdir}` ;          LIBDIR=`eval echo ${LIBDIR}`
-dnl AC_DEFINE_UNQUOTED([LIBDIR], ["$LIBDIR"], [Installation libdir])
-dnl GDOCDIR=`eval echo ${mygdocdir}` ;          GDOCDIR=`eval echo ${GDOCDIR}`
-dnl AC_DEFINE_UNQUOTED([GDOCDIR], ["$GDOCDIR"], [Installation gnome_param_app_datadir])
 prefix="${my_save_prefix}"
+dnl === Lifted from the nightfall OSS package
 
 
-
+# These are the Makefiles that need to be built!
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  libargtable/Makefile
