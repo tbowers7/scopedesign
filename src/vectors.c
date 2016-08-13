@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  *
- * FILE: setup.c
+ * FILE: vectors.c
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,22 +30,43 @@
 #include <gsl/gsl_vector.h>            // Contains GSL's vector headers
 
 /* Local headers */
-#include "setup.h"
 #include "vectors.h"
 
 
-int setup_orient_optic(scope_optic *optic){
+int vectors_primary(double x, double y, double z){
   
-  int nhat;
+  int retval;
+  double norm;
+  gsl_vector *n;
   
-  /* Compute the primary direction of NHAT */
-  nhat = vectors_primary(optic->nx, optic->ny, optic->nz);
+  /* Normalize the components, in case this was not done previously */  
+  norm = hypot3(x, y, z);
   
-  /* Test that the vectors routine did not fail */
-  if(nhat > 0){
-    optic->nhat = nhat;
-    return 0;             // Return value = 0 is a good thing
-  } else {
-    return nhat;          // Return value = -1 is NOT a good thing
+  /* Create a vector using absolute values only, since we care only about
+     which axis is primary, not +/-. */
+  n = gsl_vector_alloc(3);           // Make norm vector
+  gsl_vector_set(n,0,fabs(x/norm));  // Set fabs(x)
+  gsl_vector_set(n,1,fabs(y/norm));  // Set fabs(y)
+  gsl_vector_set(n,2,fabs(z/norm));  // Set fabs(z)
+  
+  /* Set optic.nhat based on which element is largest */
+  switch(gsl_vector_max_index(n)){
+  case 0:
+    retval = NHAT_X;
+    break; 
+  case 1:
+    retval = NHAT_Y;
+    break; 
+  case 2:
+    retval = NHAT_Z;
+    break; 
+  default:
+    printf("This should never run.  Take a shot of gin.\n");
+    retval = -1;       // Fail code
   }
+  
+  /* Free the GSL vector */
+  gsl_vector_free(n);
+  
+  return retval;
 }

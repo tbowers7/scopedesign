@@ -4,8 +4,8 @@
  * through ray tracing and simulated focal planes.
  * 
  * Timothy P. Ellsworth Bowers
- *
- * FILE: setup.c
+ * 
+ * FILE: vectors.h
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,29 +23,17 @@
  *
  */
 
-#include "sd_defs.h"                   // Main Package Headers
 
-/* Include packages */
-#include <stdio.h>
-#include <gsl/gsl_vector.h>            // Contains GSL's vector headers
-
-/* Local headers */
-#include "setup.h"
-#include "vectors.h"
+#ifndef VECTORS_H
+#define VECTORS_H
 
 
-int setup_orient_optic(scope_optic *optic){
-  
-  int nhat;
-  
-  /* Compute the primary direction of NHAT */
-  nhat = vectors_primary(optic->nx, optic->ny, optic->nz);
-  
-  /* Test that the vectors routine did not fail */
-  if(nhat > 0){
-    optic->nhat = nhat;
-    return 0;             // Return value = 0 is a good thing
-  } else {
-    return nhat;          // Return value = -1 is NOT a good thing
-  }
-}
+/* Function declarations */
+int vectors_primary(double x, double y, double z);
+
+
+
+#endif  /* VECTORS_H */
+
+
+
