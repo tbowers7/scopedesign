@@ -56,10 +56,10 @@ typedef struct{
 
 
 /* Declare functions to be consumed here only */
-static void *print_usage();            // Delaration for print_usage() function
+static void  print_usage();            // Delaration for print_usage() function
 static void *print_it(void *data);     // print_it from the Jupiter project
 static void *open_ds9(void *command);  // Simple function to open DS9
-static void *parse_argtable(int argc, char *argv[]);
+static void  parse_argtable(int argc, char *argv[]);
 
 
 /* ================= */
@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
   /* Test the execution of ds9 */
   printf("From config.h, path to ds9: %s\n",DS9_PATH);
   char command[500];
-  sprintf(command,"%s %s/new-image.fits -dsssao frame new -frame lock wcs -frame first",DS9_PATH,DATADIR);   // Place the command into the varaible
+  sprintf(command,"%s %s/new-image.fits",DS9_PATH,DATADIR);   // Place the command into the varaible
+  // sprintf(command,"%s %s/new-image.fits -dsssao frame new -frame lock wcs -frame first",DS9_PATH,DATADIR);   // Place the command into the varaible
   pthread_t tid1;
   pthread_create(&tid1, 0, open_ds9, command);	
   
@@ -82,36 +83,7 @@ int main(int argc, char *argv[])
   
   
   /* TEST ARGTABLE */
-  struct arg_lit  *list    = arg_lit0("lL",NULL,                      "list files");
-  struct arg_lit  *recurse = arg_lit0("R",NULL,                       "recurse through subdirectories");
-  struct arg_int  *repeat  = arg_int0("k","scalar",NULL,              "define scalar value k (default is 3)");
-  struct arg_str  *defines = arg_strn("D","define","MACRO",0,argc+2,  "macro definitions");
-  struct arg_file *outfile = arg_file0("o",NULL,"<output>",           "output file (default is \"-\")");
-  struct arg_lit  *verbose = arg_lit0("v","verbose,debug",            "verbose messages");
-  struct arg_lit  *help    = arg_lit0(NULL,"help",                    "print this help and exit");
-  struct arg_lit  *version = arg_lit0(NULL,"version",                 "print version information and exit");
-  struct arg_file *infiles = arg_filen(NULL,NULL,NULL,1,argc+2,       "input file(s)");
-  struct arg_end  *end     = arg_end(20);
-  void* argtable[] = {list,recurse,repeat,defines,outfile,verbose,help,version,infiles,end};
-  const char* progname = "myprog";
-  int nerrors;
-  int exitcode=0;
-  
-  
-  /* verify the argtable[] entries were allocated sucessfully */
-  if (arg_nullcheck(argtable) != 0)
-    {
-      /* NULL entries were detected, some allocations must have failed */
-      printf("%s: insufficient memory\n",progname);
-      exitcode=1;
-    }
-  
-  /* deallocate each non-null entry in argtable[] */
-  arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
-  
-  printf("ARGTABLE exit code: %d\n",exitcode);
-  /* TEST ARGTABLE */
-  
+  parse_argtable(argc, argv);
   
   
   /* TEST CODE */
@@ -151,8 +123,31 @@ int main(int argc, char *argv[])
   printf("Value of status, NHAT: %d, %d\n",ss,optic.nhat);
   
   
+  /* Make test ray */
+  scope_ray mir;
+  scope_ray test;
+
+  test.vx = sqrt(2.)/2.;
+  test.vy = 0;
+  test.vz = sqrt(2.)/2.;
+  mir.vx = 0.0;
+  mir.vy = 0.0;
+  mir.vz = 1.0;
+
   
+  printf("Optic:  %0.3f %0.3f %0.3f\n",mir.vx,mir.vy,mir.vz);
+  printf("Input:  %0.3f %0.3f %0.3f\n",test.vx,test.vy,test.vz);
   
+  rays_reflect(&test, mir);
+  
+  printf("Output: %0.3f %0.3f %0.3f\n",test.vx,test.vy,test.vz);
+  
+
+
+
+
+
+
   
   /* Test code from the JUPITER project */
   
@@ -174,7 +169,7 @@ int main(int argc, char *argv[])
 
 
 /* prints out usage information if command line arguments are not correct */
-static void *print_usage(){
+static void print_usage(){
   
   printf("\nscopedesign:\n");
   printf("Ray trace program for Instrumentation (ASTR 5760, F'09).  Traces\n");
@@ -190,7 +185,7 @@ static void *print_usage(){
 
 
 /* Simple print statement from Jupiter project */
-static void * print_it(void * data)
+static void *print_it(void * data)
 {
   printf("Hello from %s!\n", (char *)data);
   return 0;
@@ -198,7 +193,7 @@ static void * print_it(void * data)
 
 
 /* Try to open DS9 in a separate thread */
-static void * open_ds9(void * command)
+static void *open_ds9(void * command)
 {
   
   printf("%s\n",command);
@@ -207,7 +202,36 @@ static void * open_ds9(void * command)
   return;
 }
 
-static void *parse_argtable(int argc, char *argv[]){
+static void parse_argtable(int argc, char *argv[]){
+  /* TEST ARGTABLE */
+  struct arg_lit  *list    = arg_lit0("lL",NULL,                      "list files");
+  struct arg_lit  *recurse = arg_lit0("R",NULL,                       "recurse through subdirectories");
+  struct arg_int  *repeat  = arg_int0("k","scalar",NULL,              "define scalar value k (default is 3)");
+  struct arg_str  *defines = arg_strn("D","define","MACRO",0,argc+2,  "macro definitions");
+  struct arg_file *outfile = arg_file0("o",NULL,"<output>",           "output file (default is \"-\")");
+  struct arg_lit  *verbose = arg_lit0("v","verbose,debug",            "verbose messages");
+  struct arg_lit  *help    = arg_lit0(NULL,"help",                    "print this help and exit");
+  struct arg_lit  *version = arg_lit0(NULL,"version",                 "print version information and exit");
+  struct arg_file *infiles = arg_filen(NULL,NULL,NULL,1,argc+2,       "input file(s)");
+  struct arg_end  *end     = arg_end(20);
+  void* argtable[] = {list,recurse,repeat,defines,outfile,verbose,help,version,infiles,end};
+  const char* progname = "myprog";
+  int nerrors;
+  int exitcode=0;
+  
+  
+  /* verify the argtable[] entries were allocated sucessfully */
+  if (arg_nullcheck(argtable) != 0)
+    {
+      /* NULL entries were detected, some allocations must have failed */
+      printf("%s: insufficient memory\n",progname);
+      exitcode=1;
+    }
+  
+  /* deallocate each non-null entry in argtable[] */
+  arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
+  
+  printf("ARGTABLE exit code (really): %d\n",exitcode);
 
   return;
 }

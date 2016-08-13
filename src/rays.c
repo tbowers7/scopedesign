@@ -179,20 +179,6 @@ double raytrace_distroot(double t, void *params){
 }
 
 
-/* Function for advancing rays along path */
-int rays_advance_ray(scope_ray *beam, double d){
-  
-  /* Variable declarations */
-  int status=0;
-  
-  beam->x = beam->x + d * beam->vx;
-  beam->y = beam->y + d * beam->vy;
-  beam->z = beam->z + d * beam->vz;
-  
-  return status;
-}
-
-
 /* Wrapper function to find the normal vector of a surface at a given point */
 scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
   
@@ -289,30 +275,121 @@ scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
 }
 
 
-/* Functions to reflect the incoming ray based on i.n = -o.n && ixn = oxn */
+/* Function to reflect the incoming ray based on i.n = -o.n && ixn = oxn  */
 /* Reflected directions are placed back into *a, and a status is returned */
-/* Note that the directions of a and n are not relevant to which component 
-   of o is solved for first.                                              */
 int rays_reflect(scope_ray *a, scope_ray n){
   
   /* Variable declarations */
-  int status=0;
+  int status = 0;
+  
+  /* Determine the primary direction of n, and use the requisite subfunction
+     to solve for that component of o first. */
+  switch(vectors_primary(n.vx, n.vy, n.vz)){
+  case NHAT_X:
+    rays_reflect_x(a, n);
+    break;
+  case NHAT_Y:
+    rays_reflect_y(a, n);
+    break;
+  case NHAT_Z:
+    rays_reflect_z(a, n);
+    break;
+  default:
+    status = -1;
+    printf("Woah, Nellie!  Major problem here!  Abort, abort, abort!\n");
+  }
+  return status;
+}
+
+
+/*************************************************************************/
+/* The following functions are type void.  There are no internal checks, */
+/* so no status return values are required.  These functions replace the */
+/* input values with the output values, so are destructive to            */
+/* information.                                                          */
+/*************************************************************************/
+
+/* Function for advancing rays along path; x = x0 + v*t */
+void rays_advance_ray(scope_ray *beam, double d){
+  
+  beam->x = beam->x + d * beam->vx;
+  beam->y = beam->y + d * beam->vy;
+  beam->z = beam->z + d * beam->vz;
+  
+  return;
+}
+
+
+
+
+
+
+/* Functions to reflect the incoming ray based on i.n = -o.n && ixn = oxn */
+/* Reflected directions are placed back into *a, and a status is returned */
+void rays_reflect_x(scope_ray *a, scope_ray n){
+  
+  /* Variable declarations */
   double ox, oy, oz;                     // Computed output vector components
   
-  /* Calculate oz first */
-  oz = (n.x*n.x + n.y*n.y - n.z*n.z)*a->vz - 2.*n.x*n.z*a->vx - 
-    2.*n.y*n.z*a->vy;
+  /* Calculate ox first */
+  ox = (n.vy*n.vy + n.vz*n.vz - n.vx*n.vx)*a->vx - 2.*n.vx*n.vz*a->vz - 
+    2.*n.vx*n.vy*a->vy;
+  ox /= (n.vx*n.vx + n.vy*n.vy + n.vz*n.vz);           // Norm SHOULD == 1
   
-  /* Calculate ox & oy based on oz */
-  oy = a->vy + (n.y/n.z)*(oz - a->vz);
-  ox = a->vx + (n.x/n.z)*(oz - a->vz);
+  /* Calculate oy & oz based on ox */
+  oy = a->vy + (n.vy/n.vx)*(ox - a->vx);
+  oz = a->vz + (n.vz/n.vx)*(ox - a->vx);
   
   /* Place updated velocities in ray a */
   a->vx = ox;
   a->vy = oy;
   a->vz = oz;
   
-  return status;
+  return;
+}
+
+void rays_reflect_y(scope_ray *a, scope_ray n){
+  
+  /* Variable declarations */
+  double ox, oy, oz;                     // Computed output vector components
+  
+  /* Calculate oy first */
+  oy = (n.vz*n.vz + n.vx*n.vx - n.vy*n.vy)*a->vy - 2.*n.vx*n.vy*a->vx - 
+    2.*n.vy*n.vz*a->vz;
+  oy /= (n.vx*n.vx + n.vy*n.vy + n.vz*n.vz);           // Norm SHOULD == 1
+  
+  /* Calculate ox & oz based on oy */
+  ox = a->vx + (n.vx/n.vy)*(oy - a->vy);
+  oz = a->vz + (n.vz/n.vy)*(oy - a->vy);
+  
+  /* Place updated velocities in ray a */
+  a->vx = ox;
+  a->vy = oy;
+  a->vz = oz;
+  
+  return;
+}
+
+void rays_reflect_z(scope_ray *a, scope_ray n){
+  
+  /* Variable declarations */
+  double ox, oy, oz;                     // Computed output vector components
+  
+  /* Calculate oz first */
+  oz = (n.vx*n.vx + n.vy*n.vy - n.vz*n.vz)*a->vz - 2.*n.vx*n.vz*a->vx - 
+    2.*n.vy*n.vz*a->vy;
+  oz /= (n.vx*n.vx + n.vy*n.vy + n.vz*n.vz);           // Norm SHOULD == 1
+  
+  /* Calculate ox & oy based on oz */
+  ox = a->vx + (n.vx/n.vz)*(oz - a->vz);
+  oy = a->vy + (n.vy/n.vz)*(oz - a->vz);
+  
+  /* Place updated velocities in ray a */
+  a->vx = ox;
+  a->vy = oy;
+  a->vz = oz;
+  
+  return;
 }
 
 
