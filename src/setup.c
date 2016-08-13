@@ -23,11 +23,15 @@
  *
  */
 
-/* Include packages */
-#include "sd_defs.h"        // Contains header information for scopedesign
+#include "sd_defs.h"                   // Main Package Headers
 
+/* Include packages */
 #include <stdio.h>
-#include <gsl/gsl_vector.h> // Contains GSL's vector headers
+#include <gsl/gsl_vector.h>            // Contains GSL's vector headers
+
+/* Local headers */
+#include "setup.h"
+
 
 int setup_orient_optic(scope_optic *optic){
   

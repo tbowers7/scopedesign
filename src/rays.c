@@ -23,32 +23,33 @@
  *
  */
 
-#include "sd_defs.h"
+#include "sd_defs.h"                   // Main Package Headers
 
 /* Include packages */
 #include <math.h>
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include <gsl/gsl_roots.h>             // Includes GSL's root-finder algorithms
 
-
-
+/* Local headers */
 #include "rays.h"
 
-int rays_initialize(){
+
+int rays_initialize(int ray_setup){
   
   /* Variable Declarations */
   int i;
   scope_ray *rays,normal,g,det_plane;
   
-  printf("We're in rays.c...\n");
-  
+  printf("Initializing %d rays...\n",N_RAYS);
   rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
-  /* for(i=0;i<N_RAYS;i++){ */
-  /*   printf("%d\n",rays[i].lost); */
-  /* } */
   
-  /* Setup GSL's RNG */
+  /* Force set rays.lost to zero */
+  for(i=0; i < N_RAYS; i++){
+    rays[i].lost = 0;
+  }
   
+  /* Initialize ray position randomly across the aperture */ 
+  /* Start GSL's RNG */
   const gsl_rng_type *T;
   gsl_rng *r;
   
@@ -56,17 +57,37 @@ int rays_initialize(){
   T = gsl_rng_ranlux389;
   r = gsl_rng_alloc(T);
   
-  for(i=0; i < N_RAYS; i++){
-    rays[i].x = 0;
+  /* Clean up */
+  gsl_rng_free(r);
+  
+  
+  
+  
+  
+  /* Initialize ray direction based on setup criteria */
+  switch(ray_setup){
+  case(TARGET_POINT):
+    printf("Serving up a single point source...\n");
+    break;
+  case(TARGET_POINTS):
+    break;
+    
+    
+  default:
+    printf("I am defaulting on ray direction.\n");
   }
   
   
-  /* Clean up */
-  gsl_rng_free(r);
+  
+  
+  
+  
+  
   
   return 1;
   
 }
+
 
 double raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf){
   
@@ -159,14 +180,18 @@ double raytrace_distroot(double t, void *params){
 
 
 /* Function for advancing rays along path */
-void raytrace_advance_ray(scope_ray *beam, double d){
+int rays_advance_ray(scope_ray *beam, double d){
+  
+  /* Variable declarations */
+  int status=0;
   
   beam->x = beam->x + d * beam->vx;
   beam->y = beam->y + d * beam->vy;
   beam->z = beam->z + d * beam->vz;
   
-  return;  
+  return status;
 }
+
 
 /* Wrapper function to find the normal vector of a surface at a given point */
 scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
@@ -191,62 +216,59 @@ scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
   /* Select surface, and calculate n */
 
   /* PRIMARY MIRROR */
-  if(surf == OPTIC_PRI){
-
+  switch(surf){
+  case(OPTIC_PRI):
+    
     /* Normalization */
     norm = sqrt(x*x + y*y + 4.*f*f);
-    
     n.x = -x / norm;
     n.y = -y / norm;
     n.z = 2.*f / norm;
+    break;
     
-  /* SECONDARY MIRROR */
-  }else if(surf == OPTIC_SEC){
+    /* SECONDARY MIRROR */
+  case(OPTIC_SEC):
     
     /* Normalization */
     xyfact = (x*x + y*y)/esm1 + (b+f)*(b+f)/(4.*e*e);
-
     norm = sqrt(esm1*esm1 + (x*x + y*y)/xyfact);
-
     n.x = -x / sqrt(xyfact) / norm;
     n.y = -y / sqrt(xyfact) / norm;
     n.z = esm1 / norm;
-   
-  /* FOCAL PLANE */
-  }else if(surf == OPTIC_FP){
+    break;
+    
+    /* FOCAL PLANE */
+  case(OPTIC_FP):
     
     n.x = 0.0;
     n.y = 0.0;
     n.z = 1.0;
     
     /* SPHERICAL GRATING */
-  }else if(surf == OPTIC_GRS){
+  case(OPTIC_GRS):
     
     xg = -R*sin(alpha);
     yg = 0.0;
     zg = -(v+b);
-      
-
+    
     /* Normalization */
     norm = hypot3(xg-x, yg-y, zg- z);
-    
     n.x = (xg - x) / norm;
     n.y = (yg - y) / norm;
     n.z = (zg - z) / norm;    
+    break;
     
     /* TOROIDAL GRATING */
-  }else if(surf == OPTIC_GRT){
+  case(OPTIC_GRT):
     
     xg = -R*sin(alpha);
     yg = 0.0;
     zg = -(v+b);
     
     beta = asin(0.108);                      // Optimize for 1300A & 1900A
-
     Rt = R*(1. - cos(alpha)*cos(beta));            // R from torus equation
-
     xz_rad = sqrt((x-xg)*(x-xg) + (z-zg)*(z-zg));  // Simplification
-
+    
     /* Normal vecotr */
     n.x = -(xg - x) * (Rt - xz_rad) / xz_rad;
     n.y = (yg - y);
@@ -254,36 +276,43 @@ scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf){
     
     /* Normalization */
     norm = hypot3(n.x, n.y, n.z);
-
     n.x /= norm;
     n.y /= norm;
     n.z /= norm;
+    break;
     
+  default:
+    printf("Help, something's gone horribly wrong!\n");
   }
   
   return n;
 }
 
-/* Function to reflect the incoming ray based on i.n = -o.n & ixn = oxn */
-void raytrace_reflect(scope_ray *a, scope_ray n){
+
+/* Functions to reflect the incoming ray based on i.n = -o.n && ixn = oxn */
+/* Reflected directions are placed back into *a, and a status is returned */
+/* Note that the directions of a and n are not relevant to which component 
+   of o is solved for first.                                              */
+int rays_reflect(scope_ray *a, scope_ray n){
   
   /* Variable declarations */
-  double xap, yap, zap;
+  int status=0;
+  double ox, oy, oz;                     // Computed output vector components
   
-  /* Calculate zap first */
-  zap = (n.x*n.x + n.y*n.y - n.z*n.z)*a->vz - 2.*n.x*n.z*a->vx - 
+  /* Calculate oz first */
+  oz = (n.x*n.x + n.y*n.y - n.z*n.z)*a->vz - 2.*n.x*n.z*a->vx - 
     2.*n.y*n.z*a->vy;
   
-  /* Calculate xap & yap based on zap */
-  yap = a->vy + (n.y/n.z)*(zap - a->vz);
-  xap = a->vx + (n.x/n.z)*(zap - a->vz);
+  /* Calculate ox & oy based on oz */
+  oy = a->vy + (n.y/n.z)*(oz - a->vz);
+  ox = a->vx + (n.x/n.z)*(oz - a->vz);
   
   /* Place updated velocities in ray a */
-  a->vx = xap;
-  a->vy = yap;
-  a->vz = zap;
+  a->vx = ox;
+  a->vy = oy;
+  a->vz = oz;
   
-  return;
+  return status;
 }
 
 

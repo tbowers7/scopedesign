@@ -23,60 +23,44 @@
  *
  */
 
+#include "sd_defs.h"                   // Main Package Headers
+
+/* Include packages */
 #include <stdio.h>
 //#include <stdlib.h>
 //#include <string.h>
 //#include <math.h>
 #include <argtable2.h>
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+#if HAVE_PTHREAD_H
+# include <pthread.h>
+#endif
 
-#include "sd_defs.h"
-#include <config.h>
 
+/* Local headers */
 /* Test Code */
 #include "rays.h"
 #include "illumination.h"
 #include "setup.h"
 /* Test Code */
 
-void print_usage();                    // Delaration for print_usage() function
+
+/* Define the argument structure containing the relevant information... */
+typedef struct{
+  int i;
+} args;
 
 
 
 
-/* Test code from the JUPITER project */
-//
-//
-//
+/* Declare functions to be consumed here only */
+static void *print_usage();            // Delaration for print_usage() function
+static void *print_it(void *data);     // print_it from the Jupiter project
+static void *open_ds9(void *command);  // Simple function to open DS9
+static void *parse_argtable(int argc, char *argv[]);
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-#if HAVE_PTHREAD_H
-# include <pthread.h>
-#endif
-
-static void * print_it(void * data)
-{
-	printf("Hello from %s!\n", (char *)data);
-	return 0;
-}
-	
-//
-//
-//
-/* Test code from the JUPITER project */
-
-
-/* Try to open DS9 in a separate thread */
-static void * open_ds9(void * command)
-{
-  
-  printf("%s\n",command);
-  system(command);                  // Execute the command
-  
-  
-}
 
 /* ================= */
 /*   MAIN FUNCTION   */
@@ -131,7 +115,7 @@ int main(int argc, char *argv[])
   
   
   /* TEST CODE */
-  ir_stat  = rays_initialize();
+  ir_stat  = rays_initialize(TARGET_POINT);
   //  wfp_stat = write_focal_plane();
   
   printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);
@@ -181,16 +165,16 @@ int main(int argc, char *argv[])
   
   
   
-  
+  /* Rejoin any hanging threads and clear all MALLOC'd objects */
   pthread_join(tid1, 0);  // Join back the ds9 thread before quit.
-
+  
   return 0;
 }
 
 
 
 /* prints out usage information if command line arguments are not correct */
-void print_usage(){
+static void *print_usage(){
   
   printf("\nscopedesign:\n");
   printf("Ray trace program for Instrumentation (ASTR 5760, F'09).  Traces\n");
@@ -200,5 +184,30 @@ void print_usage(){
   printf("\n");
   printf("usage: scopedesign\n");
   
+  return;
+}
+
+
+
+/* Simple print statement from Jupiter project */
+static void * print_it(void * data)
+{
+  printf("Hello from %s!\n", (char *)data);
+  return 0;
+}
+
+
+/* Try to open DS9 in a separate thread */
+static void * open_ds9(void * command)
+{
+  
+  printf("%s\n",command);
+  system(command);                  // Execute the command
+  
+  return;
+}
+
+static void *parse_argtable(int argc, char *argv[]){
+
   return;
 }

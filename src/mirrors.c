@@ -23,14 +23,14 @@
  *
  */
 
-#include "sd_defs.h"
+#include "sd_defs.h"                   // Main Package Headers
 
 /* Include packages */
 #include <math.h>
 
-
-
+/* Local headers */
 #include "mirrors.h"
+
 
 /* Function for calculating the surface of the primary mirror z = f(x,y) */
 double primary_z(double x, double y, raytrace_geom *geom){

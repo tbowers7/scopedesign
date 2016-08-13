@@ -24,17 +24,15 @@
  */
 
 /* Include packages */
-#include "sd_defs.h"      // Contains header information for scopedesign
+#include "sd_defs.h"                   // Main Package Headers
 
-#ifndef HAVE_FITSIO_H
-#define HAVE_FITSIO_H
+/* Include packages */
 #include <fitsio.h>       // Contains CFITSIO function declarations
-#endif
-
-#ifndef HAVE_TPEB_H
-#define HAVE_TPEB_H
 #include <tpeb.h>         // Contains TPEB Library function declarations
-#endif
+
+/* Local headers */
+#include "illumination.h"
+
 
 int write_focal_plane(){
   

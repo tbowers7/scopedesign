@@ -55,15 +55,15 @@
 #define OPTIC_CONVER   505     // Converging Lens
 #define OPTIC_DIVER    506     // Diverging Lens
 
-/* Define symbolic integers for NHAT of optical elements                     */
-/* Used to specify which direction rays should be seen to intercept element. */
+/* Define symbolic integers for NHAT */
 #define NHAT_X 521     // Optical element is primarily normal to X
 #define NHAT_Y 522     // Optical element is primarily normal to Y
 #define NHAT_Z 523     // Optical element is primarily normal to Z
 
-
-
-
+/* Define symbolic integers for TARGET type for ray initialization */
+#define TARGET_POINT  601     // Single point source
+#define TARGET_POINTS 602     // Multiple point sources
+#define TARGET_IMAGE  605     // Use FITS image to generate ray angles
 
 
 
@@ -77,7 +77,7 @@ typedef struct{
   double vx;       // Direction (unit vector)
   double vy;       // 
   double vz;       // 
-  double lambda;   // Wavelength
+  double lambda;   // Wavelength in Angstroms
   int lost;        // Indicates whether a ray has been "lost"
 } scope_ray;
 
