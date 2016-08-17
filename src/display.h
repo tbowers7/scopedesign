@@ -28,10 +28,17 @@
 #define DISPLAY_H
 
 
+#define CMAP_GRAY "grey"
+#define CMAP_BB   "bb"
+#define CMAP_A    "a"
+#define CMAP_B    "b"
+
+
 /* Function declarations */
-int  display_open_ds9();
+void *display_open_ds9(void *status);
 int  display_talk_ds9();
 
+void display_close_ds9();
 void display_open_test();
 
 

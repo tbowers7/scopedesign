@@ -29,49 +29,94 @@
 #include <math.h>
 #include <gsl/gsl_rng.h>               // Includes GSL's rng routine defs
 #include <gsl/gsl_roots.h>             // Includes GSL's root-finder algorithms
+#include <gsl/gsl_histogram2d.h>       // Includes GSL's 2-D histograms
 
 /* Local headers */
 #include "rays.h"
 
 
-int rays_initialize(int ray_setup){
+scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot){
   
   /* Variable Declarations */
-  int i;
+  long i,j;
   scope_ray *rays,normal,g,det_plane;
+  double angle=0.;
   
-  printf("Initializing %d rays...\n",N_RAYS);
+  printf("Initializing %0.3e rays...\n",N_RAYS);
   rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
-  
-  /* Force set rays.lost to zero */
-  for(i=0; i < N_RAYS; i++){
-    rays[i].lost = 0;
-  }
-  
+  *ray_status = 2222;
+
   /* Initialize ray position randomly across the aperture */ 
   /* Start GSL's RNG */
   const gsl_rng_type *T;
   gsl_rng *r;
   
   gsl_rng_env_setup();
-  T = gsl_rng_ranlux389;
+  // T = gsl_rng_ranlux389;  // Second slowest
+  T = gsl_rng_taus2;
   r = gsl_rng_alloc(T);
   
-  /* Clean up */
-  gsl_rng_free(r);
+  /* Assign random starting point for rays */
+  double radius = 1.0;
+  double x,y;
   
-  
-  
+  for(i=0,j=0;i<N_RAYS;i++,j++){    // j counts the # of times the loop executes
+    x = gsl_rng_uniform(r)*2. - 1.;
+    y = gsl_rng_uniform(r)*2. - 1.;
+    if(x*x + y*y > 1.){             // If outside the circle,
+      i--;                          // decriment i,
+      continue;                     // and try again.
+    }
+    
+    rays[i].x = x*radius;
+    rays[i].y = y*radius;
+    rays[i].z = +10.;                                    // Start way up high
+    
+    rays[i].lost = false;                                // Not lost yet
+  }
+  *overshoot = (double)j/(double)i;
+
   
   
   /* Initialize ray direction based on setup criteria */
   switch(ray_setup){
   case(TARGET_POINT):
     printf("Serving up a single point source...\n");
+    
+    for(i=0;i<N_RAYS;i++){
+      rays[i].vx = sin(angle);
+      rays[i].vy = 0;
+      rays[i].vz = -cos(angle);
+    }
+    
+    
+    
+    
+    
     break;
   case(TARGET_POINTS):
-    break;
     
+    
+    
+    break;
+  case(TARGET_IMAGE):
+    
+    i=0;
+    /* Variable Declaration */
+    int stat;
+    gsl_histogram2d imghist;
+    gsl_histogram2d_pdf imgpdf;
+    double x,y;
+    
+    stat = gsl_histogram2d_pdf_sample(&imgpdf, 
+				      gsl_rng_uniform(r), gsl_rng_uniform(r),
+				      &x, &y);
+    
+    rays[i].x = x;
+    rays[i].y = y;
+    rays[i].z = +10.;
+    
+    break;
     
   default:
     printf("I am defaulting on ray direction.\n");
@@ -83,9 +128,11 @@ int rays_initialize(int ray_setup){
   
   
   
+  /* Clean up */
+  gsl_rng_free(r);
   
-  return 1;
   
+  return rays;
 }
 
 

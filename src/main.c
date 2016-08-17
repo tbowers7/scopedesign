@@ -27,13 +27,12 @@
 
 /* Include packages */
 #include <stdio.h>
-//#include <stdlib.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
 //#include <string.h>
 //#include <math.h>
 #include <argtable2.h>
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
 #if HAVE_PTHREAD_H
 # include <pthread.h>
 #endif
@@ -44,6 +43,8 @@
 #include "rays.h"
 #include "illumination.h"
 #include "setup.h"
+#include "display.h"
+
 /* Test Code */
 
 
@@ -58,7 +59,6 @@ typedef struct{
 /* Declare functions to be consumed here only */
 static void  print_usage();            // Delaration for print_usage() function
 static void *print_it(void *data);     // print_it from the Jupiter project
-static void *open_ds9(void *command);  // Simple function to open DS9
 static void  parse_argtable(int argc, char *argv[]);
 
 
@@ -69,31 +69,13 @@ static void  parse_argtable(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
   
-  /* Test the execution of ds9 */
-  printf("From config.h, path to ds9: %s\n",DS9_PATH);
-  char command[500];
-  sprintf(command,"%s %s/new-image.fits",DS9_PATH,DATADIR);   // Place the command into the varaible
-  // sprintf(command,"%s %s/new-image.fits -dsssao frame new -frame lock wcs -frame first",DS9_PATH,DATADIR);   // Place the command into the varaible
-  pthread_t tid1;
-  pthread_create(&tid1, 0, open_ds9, command);	
-  
   /* Variable Declarations */
-  int wfp_stat=0,ir_stat=0;               // Status variables
-  
-  
+  int i,wfp_stat=0,ir_stat=0;               // Status variables
+  scope_ray *rays;
+  double over;
   
   /* TEST ARGTABLE */
   parse_argtable(argc, argv);
-  
-  
-  /* TEST CODE */
-  ir_stat  = rays_initialize(TARGET_POINT);
-  //  wfp_stat = write_focal_plane();
-  
-  printf("Everything's fine!  %d %d\n",ir_stat,wfp_stat);
-  /* TEST CODE */
-  
-  
   
   /************ CODE OUTLINE ************/
   /* 
@@ -109,14 +91,58 @@ int main(int argc, char *argv[])
      7.  Other?
   */
   
+  /* Open DS9 in a separate thread while the code computes the geometry and
+     initializes the gazillion rays needed. */
+  int *ds9stat=0;
+  pthread_t tid_ds9;
+  pthread_create(&tid_ds9, 0, display_open_ds9, ds9stat);
+  
+
+    /* /\* Test the execution of ds9 *\/ */
+  /* char command[500]; */
+  /* sprintf(command,"%s %s/new-image.fits",DS9_PATH,DATADIR);   // Place the command into the varaible */
+  /* pthread_t tid1; */
+  /* pthread_create(&tid1, 0, open_ds9, command);	 */
+  
+  /* /\* Rejoin any hanging threads and clear all MALLOC'd objects *\/ */
+  /* pthread_join(tid1, 0);  // Join back the ds9 thread before quit. */
+
+  
+  
+  
+  
+  /* TEST CODE */
+  rays = rays_initialize(TARGET_POINT, &ir_stat, &over);
+  printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
+	 ir_stat,over,4./M_PI);
+  
+  wfp_stat = illum_write_locations(rays);
+  
+  printf("Memory check: scope_ray: %d, double: %d, int: %d, bool %d\n",
+	 sizeof(scope_ray),sizeof(double),sizeof(int),sizeof(bool));
+  printf("Rays: %0.3e\n",sizeof(scope_ray)*N_RAYS);
+  
+  free(rays);
+  
+  /* Rejoin DS9 thread here... */
+  printf("Waiting for DS9 to rejoin here...\n");
+  pthread_join(tid_ds9, 0);
+
+  /* TEST CODE */
+  
+  
+  
+  
   
   /* Make test optic */
   int ss=0;
   scope_optic optic;
+  double norm;
   
   optic.nx = 0.0;
   optic.ny = 0.0;
   optic.nz = -1.0;
+  norm = hypot3(optic.nx,optic.ny,optic.nz);
   
   ss = setup_orient_optic(&optic);
   /* Add error check for status = -1 */
@@ -126,42 +152,33 @@ int main(int argc, char *argv[])
   /* Make test ray */
   scope_ray mir;
   scope_ray test;
-
-  test.vx = sqrt(2.)/2.;
-  test.vy = 0;
-  test.vz = sqrt(2.)/2.;
-  mir.vx = 0.0;
-  mir.vy = 0.0;
-  mir.vz = 1.0;
-
   
-  printf("Optic:  %0.3f %0.3f %0.3f\n",mir.vx,mir.vy,mir.vz);
-  printf("Input:  %0.3f %0.3f %0.3f\n",test.vx,test.vy,test.vz);
+  test.vx = 0;
+  test.vy = 0;
+  test.vz = +1.0;
+  mir.vx = optic.nx/norm;
+  mir.vy = optic.ny/norm;
+  mir.vz = optic.nz/norm;
+  
+  
+  printf("Optic:  %+0.3f %+0.3f %+0.3f %0.3f\n",mir.vx,mir.vy,mir.vz,
+	 hypot3(mir.vx,mir.vy,mir.vz));
+  printf("Input:  %+0.3f %+0.3f %+0.3f %0.3f\n",test.vx,test.vy,test.vz,
+	 hypot3(test.vx,test.vy,test.vz));
   
   rays_reflect(&test, mir);
   
-  printf("Output: %0.3f %0.3f %0.3f\n",test.vx,test.vy,test.vz);
-  
-
-
-
-
-
-
-  
-  /* Test code from the JUPITER project */
-  
-  pthread_t tid;
-  pthread_create(&tid, 0, print_it, argv[0]);	
-  pthread_join(tid, 0);
-  printf("We went down path #1.\n");
-  
-  /* Test code from the JUPITER project */
+  printf("Output: %+0.3f %+0.3f %+0.3f %0.3f\n",test.vx,test.vy,test.vz,
+	 hypot3(test.vx,test.vy,test.vz));
   
   
+  sleep(2);
   
-  /* Rejoin any hanging threads and clear all MALLOC'd objects */
-  pthread_join(tid1, 0);  // Join back the ds9 thread before quit.
+  display_talk_ds9();
+  
+  sleep(5);
+  
+  display_close_ds9();
   
   return 0;
 }
@@ -192,15 +209,6 @@ static void *print_it(void * data)
 }
 
 
-/* Try to open DS9 in a separate thread */
-static void *open_ds9(void * command)
-{
-  
-  printf("%s\n",command);
-  system(command);                  // Execute the command
-  
-  return;
-}
 
 static void parse_argtable(int argc, char *argv[]){
   /* TEST ARGTABLE */

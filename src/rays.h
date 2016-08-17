@@ -28,15 +28,15 @@
 
 
 /* Function declarations */
-int       rays_initialize(int ray_setup);
-double    raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf);
-double    raytrace_distroot(double t, void *params);
+scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot);
+double     raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf);
+double     raytrace_distroot(double t, void *params);
 void       rays_advance_ray(scope_ray *beam, double d);
-scope_ray raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf);
-int       rays_reflect(scope_ray *a, scope_ray n);
-void      rays_reflect_x(scope_ray *a, scope_ray n);
-void      rays_reflect_y(scope_ray *a, scope_ray n);
-void      rays_reflect_z(scope_ray *a, scope_ray n);
+scope_ray  raytrace_get_n(scope_ray pos, raytrace_geom geom, int surf);
+int        rays_reflect(scope_ray *a, scope_ray n);
+void       rays_reflect_x(scope_ray *a, scope_ray n);
+void       rays_reflect_y(scope_ray *a, scope_ray n);
+void       rays_reflect_z(scope_ray *a, scope_ray n);
 
 
 

@@ -9,13 +9,15 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB          dnl Needed by ARGTABLE
+AC_PROG_LN_S
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h])
+AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h limits.h])
 AC_CHECK_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -26,6 +28,7 @@ AC_STRUCT_TM
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([sqrt hypot])
+AC_CHECK_FUNCS([memset regcomp])  dnl Needed by ARGTABLE
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([bzero strchr strcspn strrchr strtol])
@@ -207,6 +210,46 @@ AC_CHECK_HEADER(tpeb.h,,
       AC_MSG_ERROR("Can't find tpeb includes; use --with-tpebinc"))
     else
       AC_MSG_ERROR("Can't find tpeb includes; use --with-tpebinc")
+   fi ] )
+
+dnl =============================================================
+
+
+dnl =============================================================
+# Check for XPA library and headers
+AC_LANG_C
+
+AC_ARG_WITH( xpalib, 
+        [  --with-xpalib=DIR   DIR=-LDIR, has libxpa.a],
+        xpalib="$withval/" , xpalib= )
+if test $xpalib; then
+  if test $rpathset; then
+          LDFLAGS="$LDFLAGS -L$xpalib -Wl,--rpath -Wl,$xpalib"
+  else
+       LDFLAGS="$LDFLAGS -L$xpalib"
+  fi
+fi
+AC_MSG_RESULT( Checking XPA Library ==================================)
+
+# Check for XPA library first
+AC_CHECK_LIB(xpa,main,,
+         [AC_MSG_ERROR("Can't find libxpa; use --with-xpalib")], 
+            [-lm "-L$xpalib"])
+
+# Check for XPA header next
+AC_ARG_WITH(xpainc,
+     [  --with-xpainc=VAL   VAL=-IVAL, has xpa include files ],
+        [xpainc="$withval/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
+     [xpainc=] )
+AC_CHECK_HEADER(xpa.h,,
+  [ if test $xpainc; then
+   AC_MSG_ERROR("xpa headers not in location specified by --with-xpainc")
+   elif test $xpalib; then
+    AC_CHECK_HEADER($xpalib/../include/xpa.h,
+     [xpainc="$xpalib/../include/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
+      AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc"))
+    else
+      AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc")
    fi ] )
 
 dnl =============================================================

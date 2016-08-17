@@ -34,9 +34,15 @@
 #define posinf gsl_posinf
 #define neginf gsl_neginf
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+#if HAVE__BOOL
+#  include <stdbool.h>
+#endif
 
 /* Define values to be used */
-#define N_RAYS 100000       // Number of rays to be used
+#define N_RAYS 2e7    // Number of rays to be used
 
 /* Define symbolic integers for various surfaces */
 #define OPTIC_PRI 20        // Primary Mirror
@@ -78,7 +84,7 @@ typedef struct{
   double vy;       // 
   double vz;       // 
   double lambda;   // Wavelength in Angstroms
-  int lost;        // Indicates whether a ray has been "lost"
+  bool   lost;     // Indicates whether a ray has been "lost"
 } scope_ray;
 
 
