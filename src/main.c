@@ -93,12 +93,12 @@ int main(int argc, char *argv[])
   
   /* Open DS9 in a separate thread while the code computes the geometry and
      initializes the gazillion rays needed. */
-  int *ds9stat=0;
+  int ds9stat = DS9_FORCE_NEW; //121;    //DS9_CANIBALIZE;
   pthread_t tid_ds9;
-  pthread_create(&tid_ds9, 0, display_open_ds9, ds9stat);
+  pthread_create(&tid_ds9, 0, display_open_ds9, &ds9stat);
   
-
-    /* /\* Test the execution of ds9 *\/ */
+  
+  /* /\* Test the execution of ds9 *\/ */
   /* char command[500]; */
   /* sprintf(command,"%s %s/new-image.fits",DS9_PATH,DATADIR);   // Place the command into the varaible */
   /* pthread_t tid1; */
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   
   /* /\* Rejoin any hanging threads and clear all MALLOC'd objects *\/ */
   /* pthread_join(tid1, 0);  // Join back the ds9 thread before quit. */
-
+  
   
   
   
@@ -176,9 +176,9 @@ int main(int argc, char *argv[])
   
   display_talk_ds9();
   
-  sleep(5);
+  //sleep(5);
   
-  display_close_ds9();
+  //display_close_ds9();
   
   return 0;
 }

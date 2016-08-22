@@ -33,6 +33,8 @@
 #define CMAP_A    "a"
 #define CMAP_B    "b"
 
+#define NXPA 10
+
 
 /* Function declarations */
 void *display_open_ds9(void *status);
@@ -40,6 +42,7 @@ int  display_talk_ds9();
 
 void display_close_ds9();
 void display_open_test();
+void display_get_ports(char **namstr, int ngot);
 
 
 #endif  /* DISPLAY_H */

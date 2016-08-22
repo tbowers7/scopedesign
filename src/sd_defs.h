@@ -71,6 +71,10 @@
 #define TARGET_POINTS 602     // Multiple point sources
 #define TARGET_IMAGE  605     // Use FITS image to generate ray angles
 
+/* Define symbolic integers for DS9 opening behavior */
+#define DS9_FORCE_NEW  450    // Force new DS9 window regardless of extant
+#define DS9_CANIBALIZE 451    // Force canibalization of existing DS9 window
+#define DS9_WHATEVER   452    // If extant, use (with conditions), otherwise new
 
 
 /* Typedef structures needed */
