@@ -28,7 +28,6 @@
 /* Include packages */
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
 //#include <string.h>
 //#include <math.h>
@@ -93,7 +92,7 @@ int main(int argc, char *argv[])
   
   /* Open DS9 in a separate thread while the code computes the geometry and
      initializes the gazillion rays needed. */
-  int ds9stat = DS9_FORCE_NEW; //121;    //DS9_CANIBALIZE;
+  int ds9stat = DS9_WHATEVER; //DS9_CANIBALIZE;
   pthread_t tid_ds9;
   pthread_create(&tid_ds9, 0, display_open_ds9, &ds9stat);
   
@@ -176,9 +175,9 @@ int main(int argc, char *argv[])
   
   display_talk_ds9();
   
-  //sleep(5);
+  sleep(5);
   
-  //display_close_ds9();
+  display_close_ds9();
   
   return 0;
 }

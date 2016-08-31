@@ -42,7 +42,7 @@ int  display_talk_ds9();
 
 void display_close_ds9();
 void display_open_test();
-void display_get_ports(char **namstr, int ngot);
+void display_get_ports(char **namstr, int ngot, bool verbose);
 
 
 #endif  /* DISPLAY_H */

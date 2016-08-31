@@ -8,12 +8,14 @@ AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
-AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_INSTALL
+AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB          dnl Needed by ARGTABLE
-AC_PROG_LN_S
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -27,7 +29,7 @@ AC_STRUCT_TM
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([sqrt hypot])
+AC_CHECK_FUNCS([sqrt hypot strdup])
 AC_CHECK_FUNCS([memset regcomp])  dnl Needed by ARGTABLE
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
