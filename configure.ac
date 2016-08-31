@@ -6,6 +6,15 @@ AC_INIT([scopedesign], [0.2.0], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
+AC_CANONICAL_HOST
+
+# save LDFLAGS
+XLDFLAGS="$LDFLAGS"
+
+AC_EXEEXT
+if test x"${EXEEXT}" = "xno"; then
+  EXEEXT=""
+fi
 
 # Checks for programs.
 AC_PROG_CXX
@@ -15,17 +24,33 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB          dnl Needed by ARGTABLE
+AC_PROG_RANLIB          dnl Needed by ARGTABLE, XPA
+
 
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h limits.h])
+AC_CHECK_HEADERS(malloc.h)
+AC_CHECK_HEADERS(getopt.h)
+AC_CHECK_HEADERS(pwd.h)
+AC_CHECK_HEADERS(values.h)
+AC_CHECK_HEADERS(dlfcn.h)
+AC_CHECK_HEADERS(setjmp.h)
+AC_CHECK_HEADERS(sys/un.h)
+AC_CHECK_HEADERS(sys/shm.h)
+AC_CHECK_HEADERS(sys/mman.h)
+AC_CHECK_HEADERS(sys/ipc.h)
 AC_CHECK_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
-AC_STRUCT_TM
+AC_STRUCT_TM 
+AC_CHECK_SIZEOF(long)       dnl == Needed by XPA
+SZ_LONG=$ac_cv_sizeof_long
+AC_SUBST(SZ_LONG)
+AC_CHECK_TYPES([socklen_t], [], [], [#include <sys/socket.h>])
+
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -37,6 +62,16 @@ AC_CHECK_FUNCS([bzero strchr strcspn strrchr strtol])
 AC_CHECK_FUNC(getopt_long, SYS_GETOPTLONG=1, SYS_GETOPTLONG=0)
 AC_CHECK_FUNC(regcomp,     SYS_REGEX=1,      SYS_REGEX=0)
 AC_CHECK_FUNC(strptime,    SYS_STRPTIME=1,   SYS_STRPTIME=0)
+AC_CHECK_FUNCS(strchr memcpy snprintf atexit setenv)
+
+AC_CHECK_FUNC(connect)
+if test $ac_cv_func_connect = no; then
+  AC_CHECK_LIB(socket, connect,  EXTRA_LIBS="$EXTRA_LIBS -lsocket")
+fi                                                                          
+AC_CHECK_FUNC(gethostbyname)
+if test $ac_cv_func_gethostbyname = no; then
+  AC_CHECK_LIB(nsl, gethostbyname, EXTRA_LIBS="$EXTRA_LIBS -lnsl")
+fi                                                                          
 
 # Define automake conditionals
 AM_CONDITIONAL(USE_SYS_GETOPTLONG, test "$SYS_GETOPTLONG" = "1")
@@ -215,46 +250,207 @@ AC_CHECK_HEADER(tpeb.h,,
    fi ] )
 
 dnl =============================================================
+AC_MSG_RESULT( Checking other libraries ===============================)
 
 
-dnl =============================================================
-# Check for XPA library and headers
-AC_LANG_C
+dnl dnl =============================================================
+dnl # Check for XPA library and headers
+dnl AC_LANG_C
 
-AC_ARG_WITH( xpalib, 
-        [  --with-xpalib=DIR   DIR=-LDIR, has libxpa.a],
-        xpalib="$withval/" , xpalib= )
-if test $xpalib; then
-  if test $rpathset; then
-          LDFLAGS="$LDFLAGS -L$xpalib -Wl,--rpath -Wl,$xpalib"
+dnl AC_ARG_WITH( xpalib, 
+dnl         [  --with-xpalib=DIR   DIR=-LDIR, has libxpa.a],
+dnl         xpalib="$withval/" , xpalib= )
+dnl if test $xpalib; then
+dnl   if test $rpathset; then
+dnl           LDFLAGS="$LDFLAGS -L$xpalib -Wl,--rpath -Wl,$xpalib"
+dnl   else
+dnl        LDFLAGS="$LDFLAGS -L$xpalib"
+dnl   fi
+dnl fi
+dnl AC_MSG_RESULT( Checking XPA Library ==================================)
+
+dnl # Check for XPA library first
+dnl AC_CHECK_LIB(xpa,main,,
+dnl          [AC_MSG_ERROR("Can't find libxpa; use --with-xpalib")], 
+dnl             [-lm "-L$xpalib"])
+
+dnl # Check for XPA header next
+dnl AC_ARG_WITH(xpainc,
+dnl      [  --with-xpainc=VAL   VAL=-IVAL, has xpa include files ],
+dnl         [xpainc="$withval/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
+dnl      [xpainc=] )
+dnl AC_CHECK_HEADER(xpa.h,,
+dnl   [ if test $xpainc; then
+dnl    AC_MSG_ERROR("xpa headers not in location specified by --with-xpainc")
+dnl    elif test $xpalib; then
+dnl     AC_CHECK_HEADER($xpalib/../include/xpa.h,
+dnl      [xpainc="$xpalib/../include/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
+dnl       AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc"))
+dnl     else
+dnl       AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc")
+dnl    fi ] )
+
+dnl dnl =============================================================
+
+
+
+dnl ===============================================================
+dnl BEGIN XPA-specific code
+AC_MSG_CHECKING(for threaded xpans)
+AC_ARG_ENABLE(threaded-xpans, [  --enable-threaded-xpans    build threaded xpans],
+    [fun_ok=$enableval], [fun_ok=no])
+if test "$fun_ok" = "yes"; then
+  AC_MSG_RESULT($fun_ok)
+  AC_CHECK_LIB(pthread, pthread_create, have_pthread=yes)
+  if test  x"${have_pthread}" = x"yes"; then
+    AC_DEFINE([HAVE_LIBPTHREAD],[1],[libpthread])
+    AC_DEFINE([_REENTRANT],[1],[reentrant])
+    TLIB="-lpthread"
   else
-       LDFLAGS="$LDFLAGS -L$xpalib"
+    AC_MSG_ERROR([no threads found ... can't use enable-threaded-xpans], 1)
   fi
+else
+  AC_MSG_RESULT($fun_ok)
 fi
-AC_MSG_RESULT( Checking XPA Library ==================================)
+AC_SUBST(TLIB)
 
-# Check for XPA library first
-AC_CHECK_LIB(xpa,main,,
-         [AC_MSG_ERROR("Can't find libxpa; use --with-xpalib")], 
-            [-lm "-L$xpalib"])
+AC_MSG_CHECKING(for shared library build)
+AC_ARG_ENABLE(shared, [  --enable-shared    build shared libraries],
+    [fun_ok=$enableval], [fun_ok=no])
+if test "$fun_ok" != "no"; then
+  fpic="yes"
+  DOSHARED=shlib
+  AC_SUBST(DOSHARED)
+  if test "$fun_ok" = "link"; then
+    LLIB="-L. -l$PACKAGE_NAME"
+  else
+    LLIB='$(LIB)'
+  fi
+else
+  DOSHARED=""
+  LLIB='$(LIB)'
+fi
+AC_SUBST(LLIB)
+AC_MSG_RESULT($fun_ok)
 
-# Check for XPA header next
-AC_ARG_WITH(xpainc,
-     [  --with-xpainc=VAL   VAL=-IVAL, has xpa include files ],
-        [xpainc="$withval/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
-     [xpainc=] )
-AC_CHECK_HEADER(xpa.h,,
-  [ if test $xpainc; then
-   AC_MSG_ERROR("xpa headers not in location specified by --with-xpainc")
-   elif test $xpalib; then
-    AC_CHECK_HEADER($xpalib/../include/xpa.h,
-     [xpainc="$xpalib/../include/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
-      AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc"))
+AC_MSG_CHECKING(for request to use posix_spawn)
+AC_ARG_ENABLE(posix_spawn, [  --enable-posix_spawn    use posix_spawn() if available],
+    [fun_ok=$enableval], [fun_ok=no])
+AC_MSG_RESULT($fun_ok)
+if test "$fun_ok" = "yes"; then
+  AC_CHECK_FUNCS(posix_spawn _NSGetEnviron)
+  AC_CHECK_HEADERS(crt_externs.h)
+fi
+
+AC_PATH_XTRA
+if test x"${have_x}" = "xyes"; then
+    AC_DEFINE([HAVE_XT],[1],[Define to 1 if the system has XT])
+fi
+
+SC_PATH_TCLCONFIG
+if test x"${no_tcl}" = x ; then
+    SC_LOAD_TCLCONFIG
+    if test -r $TCL_PREFIX/include/tcl.h; then
+      TCL_CFLAGS="$TCL_INCLUDE_SPEC"
+      if test x"$DOSHARED" != x -a x"$TCL_SUPPORTS_STUBS" = x1; then
+        TCL_LIBS="$TCL_STUB_LIB_SPEC"
+        TCL_CFLAGS="$TCL_CFLAGS -DUSE_TCL_STUBS=1"
+        AC_MSG_RESULT([Tcl support will utilize stubs library: $TCL_LIBS])
+      else
+        TCL_LIBS="$TCL_LIB_SPEC"
+        AC_MSG_RESULT([Tcl support will utilize library: $TCL_LIBS])
+      fi
+      AC_DEFINE([HAVE_TCL],[1],[Define to 1 if the system has Tcl])
     else
-      AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc")
-   fi ] )
+      if test x"${with_tclconfig}" != x ; then
+        TCL_CFLAGS="$TCL_INCLUDE_SPEC"
+        TCL_LIBS="$TCL_LIB_SPEC"
+        AC_DEFINE([HAVE_TCL],[1],[Define to 1 if the system has Tcl])
+        AC_MSG_RESULT([warning: tcl.h not found with --with-tcl ... tcl build might fail])
+      else
+        AC_MSG_RESULT([$TCL_PREFIX/include/tcl.h not found ... use --with-tcl to build tcl explicitly])
+      fi
+    fi
+fi
+AC_SUBST(TCL_CFLAGS)
+AC_SUBST(TCL_LIBS)
 
-dnl =============================================================
+AC_MSG_CHECKING(for incorporation of thread support)
+AC_ARG_WITH(threads,
+    [  --with-threads          build for use in threaded programs], thr=1, thr=0)
+if test x"$thr" = x1 ; then
+  AC_MSG_RESULT(yes)
+  CFLAGS="$CFLAGS -D_REENTRANT"
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(for gtk)
+AC_ARG_WITH(gtk,
+    [  --with-gtk=<path>       include directory for gtk e.g. /usr/include/gtk-1.2], havelib=1, havelib=0)
+if test x"$havelib" = x1 ; then
+  AC_MSG_RESULT(yes ($withval))
+  GTK_CFLAGS="`pkg-config gtk+-2.0 --cflags` -DHAVE_GTK=1"
+  GTK_LIBS="`pkg-config gtk+-2.0 --libs`"
+  AC_DEFINE([HAVE_GTK],[1],[Define to 1 is the system has GTK])
+else
+  GTK_CFLAGS=""
+  GTK_LIBS=""
+  AC_MSG_RESULT(no)
+fi
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
+
+# restore LDFLAGS
+LDFLAGS="$LDFLAGS $XLDFLAGS"
+
+AC_MSG_CHECKING([$host_os configuration])
+case $host_os in
+    *cygwin*|*Cygwin* )
+        AC_DEFINE([HAVE_CYGWIN],[1],[Define to 1 is the system IS cygwin])
+        AC_MSG_RESULT([flagging Cygwin])
+        ;;
+    *mingw32*|*Mingw32*)
+        CFLAGS="$CFLAGS -mconsole"
+	EXTRA_LIBS="$EXTRA_LIBS -lwsock32"
+        AC_DEFINE([HAVE_MINGW32],[1],[Define to 1 if the system IS mingw32])
+        AC_MSG_RESULT([flagging MinGW])
+        ;;
+    *darwin*|*Darwin*)
+	LDFLAGS="$LDFLAGS $CFLAGS"
+        G=`$CC -v 2>&1 | grep version | awk '{print $3}' | awk -F. '{print $1$2}'`
+        if test x"$G" != x -a "$G" -lt 42; then
+	  CFLAGS="$CFLAGS -no-cpp-precomp"
+        fi
+        if test x"$TCL_PREFIX" = x"/usr/local"; then
+	  TCL_CFLAGS=""
+          AC_MSG_RESULT([removing -I/usr/local/include])
+        fi
+	;;
+    *osf*|*Osf*)
+	  AC_CHECK_LIB(db, snprintf, EXTRA_LIBS="$EXTRA_LIBS -ldb")
+        ;;
+    * )
+        if test x"$fpic" = x"yes" ; then
+          if test "$CC" = "gcc" -o `$CC -v 2>&1 | grep -c gcc` != "0" ; then
+	    CFLAGS="$CFLAGS -fPIC"
+	    AC_MSG_RESULT([adding -fPIC to gcc])
+	  else
+            AC_MSG_RESULT(none)
+	  fi
+	else
+            AC_MSG_RESULT(none)
+	fi
+        ;;
+esac
+
+
+AC_SUBST(EXTRA_LIBS)
+dnl END XPA-specific code
+dnl ===============================================================
+
+
+
 
 
 
@@ -291,6 +487,7 @@ dnl === Lifted from the nightfall OSS package
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  libargtable/Makefile
+                 libxpa/Makefile
 		 data/Makefile])
 AC_OUTPUT
 
