@@ -7,7 +7,8 @@ XT_SRCS =	xtloop.c
 
 GTK_SRCS =	gtkloop.c
 
-INCL	=	xpa.h xpap.h
+INCL	=	xpa.h xpap.h xport.h tcp.h word.h xalloc.h find.h xlaunch.h \
+		timedconn.h
 
 
 noinst_LIBRARIES = libxpa.a
