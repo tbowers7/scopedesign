@@ -30,17 +30,16 @@
 #include <stdlib.h>
 #include <unistd.h>                    // Contains "sleep()"
 #include <xpa.h>                       // XPA Headers for communication with DS9
-#include <config.h>                    // Holds the keys to DS9_PATH
 
 /* Local headers */
 #include "display.h"
 
 /* External-Scope Variables -- DS9 XPA Port Information */
-char *active_ports[NXPA];              // Port information for used DS9 window
-char *ds9_port;
+char *active_ports[NXPA];              // Port information for open DS9 windows
+char *ds9_port;                        // This is the port we are using
 
 
-/* Open a blank DS9 window, and check for operational status using XPA */
+/* Procure an open DS9 window for use with ScopeDesign, check status via XPA */
 void *display_open_ds9(void *status){
   
   /* Declare XPA-related variables */
@@ -58,7 +57,7 @@ void *display_open_ds9(void *status){
   char command[100];
   int nopen,good[NXPA];
   bool verbose = true;
-  
+  char *ds9_filename;
   
   /* Check for the existance of currently-open DS9 window */
   got = XPAGet(NULL, "ds9", "file", NULL, bufs, lens, names, messages, NXPA);
@@ -81,8 +80,8 @@ void *display_open_ds9(void *status){
   
   
   /* =======================================================================*/
-  /* At this point, port information is in active_ports[k] and loaded 
-     filenames are in bufs[k]                                                 */
+  /* At this point, port information is in active_ports[k] and loaded       */
+  /* filenames are in bufs[k]                                               */
   /* =======================================================================*/
   
   
@@ -146,42 +145,56 @@ void *display_open_ds9(void *status){
       /******************************************************************/
       /* I hope you saved what was in that DS9 window... it's mine now! */
       
-      printf("We're going to canibalize an existing DS9 window, if we can!\n");
-      
-      if( nopen == 0 ){
-	printf("No open DS9 window, run DS9_FORCE_NEW code...\n");
+      if( nopen == 0 ){   // If no open windows...
 	*((int *)status) = DS9_FORCE_NEW;
 	break;            // Do not change wombat, loop back to FORCE_NEW
       }      
       
-      printf("Insert code here to canibalize existing window...\n");
+      /* First check for a blank DS9 window */
+      for(i=0;i<nopen;i++){
+	
+	/* The filenames in bufs[i] contain a "\n" at the end */
+	if( strlen(bufs[i]) == 1 ){            // If blank (i.e. no open file),
+	  ds9_port = strdup(active_ports[i]);  // set ds9_port,
+	  wombat = 0;                          // and break the loop.
+	}
+      } // If blank window, take it and move on...
       
+      /* If no blank window, then take the last one */
+      if(wombat !=0)
+	ds9_port = strdup(active_ports[nopen-1]);
+      
+      printf("Using extant DS9 window with port: %s\n",ds9_port);
       
       wombat = 0;     // Set wombat to break the do...while loop.
       break;
-
-
+      
+      
     case(DS9_WHATEVER):
       
       /**************************************************/
       /* The ultimate case of "meh", if I ever saw one. */
       
-      printf("We're going to do whatever!\n");
-      
-      if( nopen == 0 ){
-	printf("No open DS9 window, run DS9_FORCE_NEW code...\n");
+      if( nopen == 0 ){   // If no open windows...
 	*((int *)status) = DS9_FORCE_NEW;
 	break;            // Do not change wombat, loop back to FORCE_NEW
       }      
       
       /* Check to see if any of the extant DS9 windows are blank */
       for(i=0;i<nopen;i++){
-	printf("File open in window #%d is: %s\n",i+1,bufs[i]);
+	
+	/* The filenames in bufs[i] contain a "\n" at the end */
+	if( strlen(bufs[i]) == 1 ){            // If blank (i.e. no open file),
+	  ds9_port = strdup(active_ports[i]);  // set ds9_port,
+	  wombat = 0;                          // and break the loop.
+	}
       }
       
-      
-      
-      wombat = 0;     // Set wombat to break the do...while loop.
+      /* If no blank windows were found, set status = DS9_FORCE_NEW */
+      if(wombat != 0)
+	*((int *)status) = DS9_FORCE_NEW;
+      else
+	printf("Using extant blank DS9 window with port: %s\n",ds9_port);
       break;
       
       
@@ -194,11 +207,6 @@ void *display_open_ds9(void *status){
       
     }                 // End of switch statement 
   while(wombat);      // do...while loop
-  
-  
-  
-  
-  
   
   return status;
 }
