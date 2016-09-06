@@ -28,6 +28,7 @@ the [distribution tarball](http://casa.colorado.edu/~ellswotp/scopedesign/) but
 not included in the GitHub repository.
 
 
+## Plan for this application
 
 ~~~~
   /************ CODE OUTLINE ************/
