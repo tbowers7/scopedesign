@@ -10,11 +10,15 @@ students to learn how light propagates through an optical system.
 
 This piece of OSS requires several external packages in order to compile and/or
 run.
+
 1. [DS9](http://ds9.si.edu/site/Home.html) -- For display of FITS images created by the program.
+
 2. [CFITSIO](http://heasarc.gsfc.nasa.gov/fitsio/fitsio.html) -- A library of C
 functions for reading and writing FITS files to disk.
+
 3. [GSL](https://www.gnu.org/software/gsl/) -- Contains scientific and other
 routines required by the application.
+
 4. [The TPEB library](http://casa.colorado.edu/~ellswotp/scopedesign/) -- 
 Various and sundry "helper" or "wrapper" routines.  The ones used by ScopeDesign
 may eventually be included as an additional "convenience library".
