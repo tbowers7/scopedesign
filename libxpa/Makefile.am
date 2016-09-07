@@ -10,7 +10,6 @@ GTK_SRCS =	gtkloop.c
 INCL	=	xpa.h xpap.h xport.h tcp.h word.h xalloc.h find.h xlaunch.h \
 		timedconn.h
 
-
 noinst_LIBRARIES = libxpa.a
 
 libxpa_a_SOURCES = ${BASE_SRCS} ${TCL_SRCS} ${XT_SRCS} ${GTK_SRCS}
@@ -18,3 +17,8 @@ libxpa_a_SOURCES = ${BASE_SRCS} ${TCL_SRCS} ${XT_SRCS} ${GTK_SRCS}
 EXTRA_DIST = BUGS COPYRIGHT INSTALL LICENSE README
 
 noinst_HEADERS = ${INCL}
+
+# The program XPANS is needed by DS9 to register port information
+bin_PROGRAMS = xpans
+xpans_SOURCES = xpans.c xpap.h
+xpans_LDADD = libxpa.a
