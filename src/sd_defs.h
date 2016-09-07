@@ -42,7 +42,7 @@
 #endif
 
 /* Define values to be used */
-#define N_RAYS 2e7    // Number of rays to be used
+#define N_RAYS 1e7    // Number of rays to be used
 
 /* Define symbolic integers for various surfaces */
 #define OPTIC_PRI 20        // Primary Mirror
