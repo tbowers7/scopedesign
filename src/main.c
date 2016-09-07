@@ -90,9 +90,13 @@ int main(int argc, char *argv[])
      7.  Other?
   */
   
+  display_splash(0);
+  
+  
+  
   /* Open DS9 in a separate thread while the code computes the geometry and
      initializes the gazillion rays needed. */
-  int ds9stat = DS9_WHATEVER; //DS9_CANIBALIZE;
+  int ds9stat = DS9_CANIBALIZE;
   pthread_t tid_ds9;
   pthread_create(&tid_ds9, 0, display_open_ds9, &ds9stat);
   
@@ -238,7 +242,7 @@ static void parse_argtable(int argc, char *argv[]){
   /* deallocate each non-null entry in argtable[] */
   arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
   
-  printf("ARGTABLE exit code (really): %d\n",exitcode);
+  // printf("ARGTABLE exit code (really): %d\n",exitcode);
 
   return;
 }

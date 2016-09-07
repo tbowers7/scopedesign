@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <unistd.h>                    // Contains "sleep()"
 #include <xpa.h>                       // XPA Headers for communication with DS9
+#include <fitsio.h>                    // CFITSIO version #
+#include <gsl/gsl_version.h>           // GSL version #
+
+#include <sys/ioctl.h>                 // Contains the TIOCGWINSZ definition
 
 /* Local headers */
 #include "display.h"
@@ -393,7 +397,115 @@ void display_get_ports(char **namstr, int ngot, bool verbose){
   }
 
   return;
+}
 
 
+/* Display a splash screen or message to terminal */
+int display_splash(int input){
+  
+  /* Declare Variables */
+  int i,status = 0;
+  char *banner,*line,*text;
+  
+  /* Split the code here based on whether or not HAVE_GTK is enabled */
+#if HAVE_GTK
+  
+  /************************************************************/
+  /* Make some fancy splash screen that wows and impresses... */
+  
+#else
+  
+  /****************************************************************/
+  /* Print out a text "splash" at the start of the program output */
+  
+  /* The last known screen width. */
+  int screen_width = display_determine_screen_width ();
+  
+  /* Check output from function, and set width, if necessary */
+  if (!screen_width)
+    screen_width = DEFAULT_SCREEN_WIDTH;
+  else if (screen_width < MINIMUM_SCREEN_WIDTH)
+    screen_width = MINIMUM_SCREEN_WIDTH;
+  
+  /* Make banner of '*' the width of the screen */
+  banner = (char *)malloc(sizeof(char) * (screen_width+1));
+  text   = (char *)malloc(sizeof(char) * (screen_width+1));
+  line   = (char *)malloc(sizeof(char) * (screen_width+1));
+  banner[0] = '\0';
+  for(i=0;i<screen_width;i++)
+    strcat(banner,"*\0");
+  
+  /* Print out splash to screen */
+  printf("\n%s\n",banner);
+  
+  sprintf(text,"ScopeDesign version %s",PACKAGE_VERSION);  // Line 1
+  display_splash_text(text,line,screen_width);
+  
+  sprintf(text,"Written by Timothy Ellsworth Bowers");  // Line 2
+  display_splash_text(text,line,screen_width);
+  
+  sprintf(text,"");  // Line 3
+  display_splash_text(text,line,screen_width);
+  
+  sprintf(text,"Using DS9 found at %s",DS9_PATH);  // Line 4
+  display_splash_text(text,line,screen_width);
+  
+  sprintf(text,"Using CFITSIO version %d.%d",CFITSIO_MAJOR,CFITSIO_MINOR); 
+  display_splash_text(text,line,screen_width);
+  
+  sprintf(text,"Using GSL version %s",GSL_VERSION);  // Line 6
+  display_splash_text(text,line,screen_width);
+  
+  printf("%s\n\n",banner);
+  
+  /* Done */
+  free(banner);
+  free(line);
+  free(text);
+#endif // No HAVE_GTK... splash to screen
+  
+  return status;
+}
 
+void display_splash_text(char *text, char *line, int width){
+  
+  /* Declare Variables */
+  int i,more;
+  
+  line[0] = '\0';                    // NULL string
+  strcat(line,"*   ");               // Opening space
+  strcat(line,text);                 // Input text
+  more = width - strlen(line) - 1;   // How much more space available?
+  for(i=0;i<more;i++)                // Loop through available space
+    strcat(line," ");                // And add a space
+  strcat(line,"*\0");                // End with '*' and a NULL
+  printf("%s\n",line);               // Print it!
+  
+  return;
+}
+
+
+/* Routine pulled from GNU WGET (src/utils.c) */
+int display_determine_screen_width(void){
+  
+  /* If there's a way to get the terminal size using POSIX
+     tcgetattr(), somebody please tell me.  */
+#ifdef TIOCGWINSZ
+  int fd;
+  struct winsize wsz;
+  
+  fd = fileno (stderr);
+  if (ioctl (fd, TIOCGWINSZ, &wsz) < 0)
+    return 0;                   /* most likely ENOTTY */
+  
+  return wsz.ws_col;
+#elif defined(WINDOWS)
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  if (!GetConsoleScreenBufferInfo (GetStdHandle (STD_ERROR_HANDLE), &csbi))
+    return 0;
+  return csbi.dwSize.X;
+#else  /* neither TIOCGWINSZ nor WINDOWS */
+  return 0;
+#endif /* neither TIOCGWINSZ nor WINDOWS */
+  
 }

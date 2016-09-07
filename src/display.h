@@ -35,15 +35,24 @@
 
 #define NXPA 10
 
+/* Assumed screen width if we can't find the real value.  */
+#define DEFAULT_SCREEN_WIDTH 80
+/* Minimum screen width we'll try to work with. */
+#define MINIMUM_SCREEN_WIDTH 45
+
+
 
 /* Function declarations */
 void *display_open_ds9(void *status);
-int  display_talk_ds9();
+int   display_talk_ds9();
 
-void display_close_ds9();
-void display_open_test();
-void display_get_ports(char **namstr, int ngot, bool verbose);
+void  display_close_ds9();
+void  display_open_test();
+void  display_get_ports(char **namstr, int ngot, bool verbose);
 
+int   display_splash(int input);
+void  display_splash_text(char *test, char *line, int width);
+int   display_determine_screen_width(void);
 
 #endif  /* DISPLAY_H */
 
