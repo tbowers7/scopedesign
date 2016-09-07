@@ -64,7 +64,7 @@ void *display_open_ds9(void *status){
   nopen = got;
   
   /* If active_ports DS9 windows found, get connection information */
-  if(nopen > 0){
+  if( nopen > 0 ) {
     printf("*** Found %d extant DS9 window(s) open on this system. ***\n",
 	   nopen);
     display_get_ports(names,nopen,true); // Place port info in active_ports
@@ -76,7 +76,10 @@ void *display_open_ds9(void *status){
       if( names[i] )    free(names[i]);
       if( messages[i] ) free(messages[i]);
     }
-  }
+  } else {
+    /* If no open windows, we're going to need to FORCE_NEW */
+    *((int *)status) = DS9_FORCE_NEW;
+  }  
   
   
   /* =======================================================================*/
@@ -145,11 +148,6 @@ void *display_open_ds9(void *status){
       /******************************************************************/
       /* I hope you saved what was in that DS9 window... it's mine now! */
       
-      if( nopen == 0 ){   // If no open windows...
-	*((int *)status) = DS9_FORCE_NEW;
-	break;            // Do not change wombat, loop back to FORCE_NEW
-      }      
-      
       /* First check for a blank DS9 window */
       for(i=0;i<nopen;i++){
 	
@@ -160,7 +158,7 @@ void *display_open_ds9(void *status){
 	}
       } // If blank window, take it and move on...
       
-      /* If no blank window, then take the last one */
+      /* If no blank window, then take over the last one */
       if(wombat !=0)
 	ds9_port = strdup(active_ports[nopen-1]);
       
@@ -174,11 +172,6 @@ void *display_open_ds9(void *status){
       
       /**************************************************/
       /* The ultimate case of "meh", if I ever saw one. */
-      
-      if( nopen == 0 ){   // If no open windows...
-	*((int *)status) = DS9_FORCE_NEW;
-	break;            // Do not change wombat, loop back to FORCE_NEW
-      }      
       
       /* Check to see if any of the extant DS9 windows are blank */
       for(i=0;i<nopen;i++){
