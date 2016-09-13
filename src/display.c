@@ -28,7 +28,7 @@
 /* Include packages */
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>                    // Contains "sleep()"
+#include <unistd.h>                    // Contains "usleep(), ttyslot()"
 #include <xpa.h>                       // XPA Headers for communication with DS9
 #include <fitsio.h>                    // CFITSIO version #
 #include <gsl/gsl_version.h>           // GSL version #
@@ -61,9 +61,11 @@ void *display_open_ds9(void *status){
   char command[100];
   int nopen,good[NXPA];
   bool verbose = true;
-  char *ds9_filename;
+  char *ds9_filename,ds9_title[50];
   
   /* Check for the existance of currently-open DS9 window */
+  /* Note: the XPAGet() routine searches ONLY for windows owned by the current
+     username... it ignores windows owned by other users of the machine. */
   got = XPAGet(NULL, "ds9", "file", NULL, bufs, lens, names, messages, NXPA);
   nopen = got;
   
@@ -104,18 +106,20 @@ void *display_open_ds9(void *status){
       printf("Opening a new DS9 window for use with ScopeDesign...\n");
       
       /* Create the system command and send forth! */
-      sprintf(command,"%s &",DS9_PATH);
+      sprintf(ds9_title,"ScopeDesign_%d",ttyslot());                // Unique!
+      sprintf(command,"%s -title %s -xpa yes &",DS9_PATH,ds9_title);
       system(command);                  // Execute the command
       
       /* Wait until the new window opens, then register its port information */
       do{
-	sleep(1);  // Cool your heels while waiting for new window to open
+	usleep(500);  // Cool your heels while waiting for new window to open
 	
-	/* Get the DS9 frame information */
-	got = XPAGet(NULL, "ds9", "frame", "frameno", 
+	/* Get the DS9 frame information for window with this title */
+	got = XPAGet(NULL, ds9_title, "frame", "frameno", 
 		     bufs, lens, names, messages, NXPA);
 	
-	if(got != nopen)
+	
+	if(got == 1)  // If a window appears with the proper title...
 	  break;
       }while(1);
       
@@ -145,12 +149,13 @@ void *display_open_ds9(void *status){
       
       wombat = 0;     // Set wombat to break the do...while loop.
       break;
- 
-
+      
+      
     case(DS9_CANIBALIZE):
       
       /******************************************************************/
       /* I hope you saved what was in that DS9 window... it's mine now! */
+      /* Note: This will only canibalize windows owned by the current user */
       
       /* First check for a blank DS9 window */
       for(i=0;i<nopen;i++){
