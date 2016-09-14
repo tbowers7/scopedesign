@@ -49,3 +49,39 @@ int setup_orient_optic(scope_optic *optic){
     return nhat;          // Return value = -1 is NOT a good thing
   }
 }
+
+
+/* Function to initialize the geometry to be used */
+int setup_initialize_geometry(scope_scope *scope,         // Info about elements
+			      scope_element *elements,    // Order of impact
+			      int *nelem){                // How many impacts?
+  
+  /* In principle, this function could call an external .txt configuration
+     file, or parsed information from the command line, or just about anything.
+     
+     For now, let's initialize the demo Newtonian telescope and go on!
+  */
+  
+  /* Variable Declarations */
+  
+  /* Initialize the Newtonian */
+  demo_newtonian(&scope->primary, &scope->secondary, elements, nelem);
+  
+  
+  return 0;
+}
+
+
+/* Function to initialize the illumination environment */
+int setup_initialize_illumination(int value){
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  return 0;
+}

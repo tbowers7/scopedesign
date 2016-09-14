@@ -30,9 +30,9 @@
 /* Include various GSL functions, defined as local */
 #include <gsl/gsl_math.h>
 #define hypot3 gsl_hypot3
-#define nan    gsl_nan
-#define posinf gsl_posinf
-#define neginf gsl_neginf
+#define nan    GSL_NAN
+#define posinf GSL_POSINF
+#define neginf GSL_NEGINF
 
 #if HAVE_CONFIG_H
 # include <config.h>
@@ -47,11 +47,22 @@
 /* Define symbolic integers for various surfaces */
 #define OPTIC_PRI 20        // Primary Mirror
 #define OPTIC_SEC 21        // Secondary Mirror
-#define OPTIC_GRS 22        // Spherical Dispersion Grating
-#define OPTIC_GRT 23        // Torroidal Dispersion Grating
-#define OPTIC_FP  24        // Cassegrain Focal Plane
-#define OPTIC_SF  25        // Rowland Circle Spectral Focus
-#define OPTIC_NFP 26        // Newtonian Focal Plane
+#define OPTIC_TRI 22        // Tertiary Mirror
+#define OPTIC_QUA 23        // Quaternary Mirror
+#define OPTIC_QUI 24        // Quinary Mirror
+#define OPTIC_SEN 25        // Senary Mirror
+#define OPTIC_SEP 26        // Septenary Mirror
+#define OPTIC_OCT 27        // Octonary Mirror
+#define OPTIC_NON 28        // Nonary Mirror
+#define OPTIC_DEN 29        // Denary Mirror
+#define OPTIC_NFP 30        // Newtonian Focal Plane
+#define OPTIC_CFP 31        // Cassegrain Focal Plane
+
+/* Obsolete defines... need to clean out rays.c */
+#define OPTIC_SF  666
+#define OPTIC_FP  667
+#define OPTIC_GRS 668
+#define OPTIC_GRT 669
 
 /* Define symbolic integers for TYPE of optical element */
 #define OPTIC_PLANE    501     // Plane Mirror
@@ -91,8 +102,48 @@ typedef struct{
   bool   lost;     // Indicates whether a ray has been "lost"
 } scope_ray;
 
+// Optical Element Geometry
+typedef struct{
+  int    type;   // TYPE of optical element (plane, parabola, etc.)
+  double f;      // Focal Length of Optical Element
+  double dmaj;   // Major Diameter of Optical Element
+  double dmin;   // Minor Diameter of Optical Element
+  int    vmin;   // Direction of Minor Diameter (NHAT integers, 0 if N/A)
+  double cx;     // x-position of center of element
+  double cy;     // y-position of center of element
+  double cz;     // z-position of center of element
+  double nx;     // N_x for center of element
+  double ny;     // N_y for center of element
+  double nz;     // N_z for center of element
+  int    nhat;   // Primary direction of nhat - set by setup_orient_optic()
+} scope_optic;
 
-// Geometry of the problem, built as a structure for easier passing
+// Structure for Obstruction / Reflection / Refraction information
+typedef struct{
+  int  elem;     // Symbolic integer for element
+  bool block;    // Does this element block light? (i.e. set lost = 1?)
+  bool reflect;  // Does this element reflect light?
+  bool refract;  // Does this element refract light?
+} scope_element;
+
+
+// Telescope Structure for ScopeDesign Consumption
+typedef struct{
+  scope_optic primary;      // Provide space for 10 optical elements
+  scope_optic secondary;    // 
+  scope_optic tertiary;     // 
+  scope_optic quaternary;   //
+  scope_optic quinary;      //
+  scope_optic senary;       //
+  scope_optic septenary;    //
+  scope_optic octonary;     //
+  scope_optic nonary;       //
+  scope_optic denary;       //
+} scope_scope;
+
+
+
+// Leftover structure from raytrace program... still here to allow compile...
 typedef struct{
   double f;      // Focal Length of Primary
   double b;      // Back-plane distance (Focal plane, behind primary vertex)
@@ -105,25 +156,6 @@ typedef struct{
   double d;      // lines/mm converted to Angstroms per line
 } raytrace_geom;
 
-
-// General Geometry for ScopeDesign Consumption
-typedef struct{
-  double a;      // Space-filler
-} scope_geom;
-
-// Optical Element Geometry
-typedef struct{
-  int type;      // TYPE of optical element (plane, parabola, etc.)
-  double f;      // Focal Length of Optical Element
-  double d;      // Diameter of Optical Element
-  double cx;     // x-position of center of element
-  double cy;     // y-position of center of element
-  double cz;     // z-position of center of element
-  double nx;     // N_x for center of element
-  double ny;     // N_y for center of element
-  double nz;     // N_z for center of element
-  int nhat;      // Primary direction of nhat - set by setup_orient_optic()
-} scope_optic;
 
 
 // Parameters needed for passing to the GSL root-finding functions

@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  * 
- * FILE: setup.h
+ * FILE: demo.h
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,15 @@
  */
 
 
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef DEMO_H
+#define DEMO_H
 
 
 /* Function declarations */
-int setup_orient_optic();
-int setup_initialize_geometry(scope_scope *, scope_element *, int *);
-int setup_initialize_illumination(int);
+void demo_newtonian(scope_optic *, scope_optic *, scope_element *, int *);
 
-#endif  /* SETUP_H */
+
+#endif  /* DEMO_H */
 
 
 

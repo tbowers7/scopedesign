@@ -90,26 +90,29 @@ int main(int argc, char *argv[])
      7.  Other?
   */
   
+  /* Display a splash screen! */
   display_splash(0);
   
   
   
   /* Open DS9 in a separate thread while the code computes the geometry and
      initializes the gazillion rays needed. */
-  int ds9stat = DS9_CANIBALIZE;
+  int ds9stat = DS9_WHATEVER; //DS9_CANIBALIZE;
   pthread_t tid_ds9;
   pthread_create(&tid_ds9, 0, display_open_ds9, &ds9stat);
   
   
-  /* /\* Test the execution of ds9 *\/ */
-  /* char command[500]; */
-  /* sprintf(command,"%s %s/new-image.fits",DS9_PATH,DATADIR);   // Place the command into the varaible */
-  /* pthread_t tid1; */
-  /* pthread_create(&tid1, 0, open_ds9, command);	 */
   
-  /* /\* Rejoin any hanging threads and clear all MALLOC'd objects *\/ */
-  /* pthread_join(tid1, 0);  // Join back the ds9 thread before quit. */
+  /* Set up the telescope geometry */
+  int sval,nelem;
+  scope_scope telescope;
+  scope_element *elements;
+  sval = setup_initialize_geometry(&telescope,elements,&nelem);
+  printf("Number of elements rays must interact with: %d\n",nelem);
   
+  
+  /* Set up the illumination environment */
+  sval = setup_initialize_illumination(TARGET_POINT);
   
   
   
@@ -126,6 +129,7 @@ int main(int argc, char *argv[])
   printf("Rays: %0.3e\n",sizeof(scope_ray)*N_RAYS);
   
   free(rays);
+  free(elements);
   
   /* Rejoin DS9 thread here... */
   printf("Waiting for DS9 to rejoin here...\n");
