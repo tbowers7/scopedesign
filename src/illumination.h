@@ -29,8 +29,8 @@
 
 
 /* Function declarations */
-int write_focal_plane();
-int illum_write_locations(scope_ray *rays);
+int   write_focal_plane();
+char *illum_write_locations(scope_ray *rays, int location, int *status);
 
 
 #endif  /* ILLUMINATION_H */

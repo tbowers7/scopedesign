@@ -39,24 +39,28 @@
 #endif
 #if HAVE__BOOL
 #  include <stdbool.h>
+#else
+#  define true  1           // Define true and false for use with type int
+#  define false 0
 #endif
 
 /* Define values to be used */
 #define N_RAYS 1e7    // Number of rays to be used
 
 /* Define symbolic integers for various surfaces */
-#define OPTIC_PRI 20        // Primary Mirror
-#define OPTIC_SEC 21        // Secondary Mirror
-#define OPTIC_TRI 22        // Tertiary Mirror
-#define OPTIC_QUA 23        // Quaternary Mirror
-#define OPTIC_QUI 24        // Quinary Mirror
-#define OPTIC_SEN 25        // Senary Mirror
-#define OPTIC_SEP 26        // Septenary Mirror
-#define OPTIC_OCT 27        // Octonary Mirror
-#define OPTIC_NON 28        // Nonary Mirror
-#define OPTIC_DEN 29        // Denary Mirror
-#define OPTIC_NFP 30        // Newtonian Focal Plane
-#define OPTIC_CFP 31        // Cassegrain Focal Plane
+#define OPTIC_INF 20        // Infinitely far away... (or initial point)
+#define OPTIC_PRI 21        // Primary Mirror
+#define OPTIC_SEC 22        // Secondary Mirror
+#define OPTIC_TRI 23        // Tertiary Mirror
+#define OPTIC_QUA 24        // Quaternary Mirror
+#define OPTIC_QUI 25        // Quinary Mirror
+#define OPTIC_SEN 26        // Senary Mirror
+#define OPTIC_SEP 27        // Septenary Mirror
+#define OPTIC_OCT 28        // Octonary Mirror
+#define OPTIC_NON 29        // Nonary Mirror
+#define OPTIC_DEN 30        // Denary Mirror
+#define OPTIC_NFP 31        // Newtonian Focal Plane
+#define OPTIC_CFP 32        // Cassegrain Focal Plane
 
 /* Obsolete defines... need to clean out rays.c */
 #define OPTIC_SF  666
@@ -69,8 +73,8 @@
 #define OPTIC_PARABOLA 502     // Parabolic Mirror
 #define OPTIC_SHPERE   503     // Spherical Mirror
 #define OPTIC_HYPER    504     // Hyperbolic Mirror
-#define OPTIC_CONVER   505     // Converging Lens
-#define OPTIC_DIVER    506     // Diverging Lens
+#define OPTIC_CONVERG  505     // Converging Lens
+#define OPTIC_DIVERG   506     // Diverging Lens
 
 /* Define symbolic integers for NHAT */
 #define NHAT_X 521     // Optical element is primarily normal to X
@@ -82,24 +86,29 @@
 #define TARGET_POINTS 602     // Multiple point sources
 #define TARGET_IMAGE  605     // Use FITS image to generate ray angles
 
-/* Define symbolic integers for DS9 opening behavior */
+/* Define symbolic integers for DS9 communication */
 #define DS9_FORCE_NEW  450    // Force new DS9 window regardless of extant
 #define DS9_CANIBALIZE 451    // Force canibalization of existing DS9 window
 #define DS9_WHATEVER   452    // If extant, use (with conditions), otherwise new
-
+#define DS9_GET        453    // Read XPA handles from DS9
+#define DS9_SET        454    // Set new XPA handle to DS9
 
 /* Typedef structures needed */
 
 // "Ray", including position, direction, wavelength & lost flag
 typedef struct{
-  double x;        // Position with ray-trace environment
+  double x;        // Position within ray-trace environment
   double y;        // 
   double z;        // 
   double vx;       // Direction (unit vector)
   double vy;       // 
   double vz;       // 
   double lambda;   // Wavelength in Angstroms
+#if HAVE__BOOL
   bool   lost;     // Indicates whether a ray has been "lost"
+#else
+  int    lost;     // Use type int if BOOL type not available
+#endif
 } scope_ray;
 
 // Optical Element Geometry
@@ -121,9 +130,15 @@ typedef struct{
 // Structure for Obstruction / Reflection / Refraction information
 typedef struct{
   int  elem;     // Symbolic integer for element
-  bool block;    // Does this element block light? (i.e. set lost = 1?)
+#if HAVE__BOOL
+  bool block;    // Does this element block light? (i.e. set lost = true?)
   bool reflect;  // Does this element reflect light?
   bool refract;  // Does this element refract light?
+#else
+  int  block;    // Use type int if BOOL type not available
+  int  reflect;
+  int  refract;
+#endif
 } scope_element;
 
 
@@ -141,6 +156,18 @@ typedef struct{
   scope_optic denary;       //
 } scope_scope;
 
+
+
+// Structure containing DS9 XPA handles for the open window
+typedef struct{
+  char  *file;               // Filename
+  int    frame;              // Frame Number
+  char  *cmap;               // Colormap
+  char  *scale;              // Color scale type
+  double min_scale;          // Color scale minimum
+  double max_scale;          // Color scale maximum
+  int    zoom;               // Zoom
+} scope_display;
 
 
 // Leftover structure from raytrace program... still here to allow compile...

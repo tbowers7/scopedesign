@@ -27,6 +27,7 @@
 #include "sd_defs.h"                   // Main Package Headers
 
 /* Include packages */
+#include <string.h>
 #include <fitsio.h>              // Contains CFITSIO function declarations
 #include <tpeb.h>                // Contains TPEB Library function declarations
 #include <gsl/gsl_errno.h>       // Contains GSL's error-handling
@@ -56,23 +57,25 @@ int write_focal_plane(){
 
 
 /* Function (in progress) to write ray locations to a FITS file. */
-int illum_write_locations(scope_ray *rays){
+char *illum_write_locations(scope_ray *rays, int location, int *status){
   
   /* Variable Declarations */
-  int  errval,status=0;
+  int  errval;
   long i,j,k,nx,ny;
+  char fn[256];
+  *status = 0;
   
   /* Allocate 2-D Histogram to accumulate locations */
   /* NOTE: in the future, will need to pass in geometry descriptors... for now
      just work on test situation in main(). */
-
+  
   nx = 220;          // NBINS in the x direction
   ny = 220;          // NBINS in the y direction
   
   gsl_histogram2d *h = gsl_histogram2d_alloc(nx, ny);
   long n_sq[2] = {nx,ny};
   double **imarr = imutil_alloc_2darray(n_sq);
-
+  
   
   /* Set range for histogram */
   gsl_histogram2d_set_ranges_uniform (h, 
@@ -92,18 +95,35 @@ int illum_write_locations(scope_ray *rays){
       imarr[i][j] = gsl_histogram2d_get(h, i, j);
   
   
+  /* Use SWITCH statement to get correct filename to correspond with location */
+  switch(location)
+    {
+    case OPTIC_INF:
+      sprintf(fn,"initial_illumination.fits");
+      break;
+    case OPTIC_PRI:
+      sprintf(fn,"primary_illumination.fits");
+      break;
+    case OPTIC_SEC:
+      sprintf(fn,"secondary_illumination.fits");
+      break;
+      
+      
+    default:
+      sprintf(fn,"test_data.fits");
+    }
+  
+  
   /* Write it out! */
-  char *fn = "test_data.fits";
   char *hd = (char *)malloc(100 * sizeof(char));
   sprintf(hd,"%s/new-image.fits",DATADIR);
   
-  fitswrap_write2file(fn, hd,  imarr, n_sq, &status);
-
+  fitswrap_write2file(fn, hd,  imarr, n_sq, status);
   
-  
+  printf("In-function value of status: %d\n",*status);
   
   /* Clean up */
   gsl_histogram2d_free(h);
   
-  return status;
+  return strdup(fn);            // Return a properly malloc'd and sized string
 }

@@ -43,16 +43,23 @@
 
 
 /* Function declarations */
-void *display_open_ds9(void *status);
-int   display_talk_ds9();
 
-void  display_close_ds9();
+/* Public Functions */
+void *display_ds9_open(void *status);
+int   display_ds9_talk(int action, scope_display *display);
+void  display_ds9_close();
+int   display_splash(int input);
+
+
+/* Internal Functions */
 void  display_open_test();
 void  display_get_ports(char **namstr, int ngot, bool verbose);
 
-int   display_splash(int input);
 void  display_splash_text(char *test, char *line, int width);
 int   display_determine_screen_width(void);
+
+int   display_ds9_xpa_set(scope_display *display, char *handle);
+int   display_ds9_xpa_read(scope_display *display);
 
 #endif  /* DISPLAY_H */
 

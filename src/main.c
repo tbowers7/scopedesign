@@ -69,9 +69,12 @@ int main(int argc, char *argv[])
 {
   
   /* Variable Declarations */
-  int i,wfp_stat=0,ir_stat=0;               // Status variables
-  scope_ray *rays;
-  double over;
+  int           i,wfp_stat=0,ir_stat=0;               // Status variables
+  scope_ray    *rays;
+  double        over;
+  char         *fn_startpos;
+  scope_display display_str;
+  
   
   /* TEST ARGTABLE */
   parse_argtable(argc, argv);
@@ -97,16 +100,17 @@ int main(int argc, char *argv[])
   
   /* Open DS9 in a separate thread while the code computes the geometry and
      initializes the gazillion rays needed. */
-  int ds9stat = DS9_WHATEVER; //DS9_CANIBALIZE;
+  int       ds9stat = DS9_WHATEVER; //DS9_CANIBALIZE;
   pthread_t tid_ds9;
-  pthread_create(&tid_ds9, 0, display_open_ds9, &ds9stat);
+  pthread_create(&tid_ds9, 0, display_ds9_open, &ds9stat);
   
   
   
   /* Set up the telescope geometry */
-  int sval,nelem;
-  scope_scope telescope;
+  int            sval,nelem;
+  scope_scope    telescope;
   scope_element *elements;
+  
   sval = setup_initialize_geometry(&telescope,elements,&nelem);
   printf("Number of elements rays must interact with: %d\n",nelem);
   
@@ -117,12 +121,23 @@ int main(int argc, char *argv[])
   
   
   
-  /* TEST CODE */
+  /* Initialize the rays, and write out FITS containing:
+     starting positions
+     starting angles */
   rays = rays_initialize(TARGET_POINT, &ir_stat, &over);
+  
+  
   printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
 	 ir_stat,over,4./M_PI);
   
-  wfp_stat = illum_write_locations(rays);
+  fn_startpos = illum_write_locations(rays, OPTIC_INF, &wfp_stat);
+  printf("File location and status: %s %d\n",fn_startpos, wfp_stat);
+  
+  /* Display ray starting location in the DS9 window */
+  display_ds9_talk(DS9_GET, &display_str);
+  
+  
+  
   
   printf("Memory check: scope_ray: %d, double: %d, int: %d, bool %d\n",
 	 sizeof(scope_ray),sizeof(double),sizeof(int),sizeof(bool));
@@ -130,9 +145,10 @@ int main(int argc, char *argv[])
   
   free(rays);
   free(elements);
+  free(fn_startpos);  
   
   /* Rejoin DS9 thread here... */
-  printf("Waiting for DS9 to rejoin here...\n");
+  printf("Pausing here until the Open_DS9 thread rejoins...\n");
   pthread_join(tid_ds9, 0);
 
   /* TEST CODE */
@@ -179,13 +195,13 @@ int main(int argc, char *argv[])
 	 hypot3(test.vx,test.vy,test.vz));
   
   
-  sleep(2);
+  // sleep(2);
   
-  display_talk_ds9();
+  // display_ds9_talk();
   
   sleep(5);
   
-  display_close_ds9();
+  display_ds9_close();
   
   return 0;
 }

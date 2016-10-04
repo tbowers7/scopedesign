@@ -44,7 +44,7 @@ char *ds9_port;                        // This is the port we are using
 
 
 /* Procure an open DS9 window for use with ScopeDesign, check status via XPA */
-void *display_open_ds9(void *status){
+void *display_ds9_open(void *status){
   
   /* Declare XPA-related variables */
   int  i,j,got;
@@ -215,7 +215,7 @@ void *display_open_ds9(void *status){
 
 
 /* Close DS9 Window using XPA interface */
-void display_close_ds9(){
+void display_ds9_close(){
   
   /* Declare Variables */
   int  i, got;
@@ -241,10 +241,44 @@ void display_close_ds9(){
   return;
 }
 
+
+
+
+
+
+
+
+
+
 /***************************************************************************/
 /* Communicate with DS9 */
-int display_talk_ds9(){
+int display_ds9_talk(int action, scope_display *display){
   
+  /* Declare Variables */
+  int retval;
+  char *handle = "Fun times.";
+  
+  /* Choose the necessary evil */
+  switch(action)
+    {
+    case DS9_GET:
+      retval = display_ds9_xpa_read(display);
+      break;
+    case DS9_SET:
+      /* Determine which handle changed */
+      display_ds9_xpa_set(display, handle);
+      break;
+    default:
+      printf("Danger, Will Robinson, no correct action specified!\n");
+      retval = -1;
+    }
+  
+  return retval;
+}
+
+
+int display_ds9_xpa_set(scope_display *display, char *handle){
+
   /* Declare Variables */
   int status=0;
   XPA xpa;
@@ -364,6 +398,19 @@ int display_talk_ds9(){
   
   
   return status;
+}
+
+
+int display_ds9_xpa_read(scope_display *display){
+  
+  /* Declare Variables */
+  
+  printf("We're deep within the bowels of the code, executing display_ds9_xpa_read().\n");
+  /* Go through the handles, executing XPAGet() for each one and loading them
+     into the display structure */
+  
+  
+  return 0;
 }
 
 
