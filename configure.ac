@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([scopedesign], [0.2.1], [tbowers@email.arizona.edu])
+AC_INIT([scopedesign], [0.2.2], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -16,7 +16,7 @@ if test x"${EXEEXT}" = "xno"; then
   EXEEXT=""
 fi
 
-# Checks for programs.
+# Check for required programs.
 AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_CC
@@ -28,23 +28,22 @@ AC_PROG_RANLIB          dnl Needed by ARGTABLE, XPA
 
 
 # Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([libintl.h stdlib.h string.h strings.h unistd.h getopt.h limits.h])
-AC_CHECK_HEADERS(malloc.h)
-AC_CHECK_HEADERS(getopt.h)
-AC_CHECK_HEADERS(pwd.h)
-AC_CHECK_HEADERS(values.h)
-AC_CHECK_HEADERS(dlfcn.h)
-AC_CHECK_HEADERS(setjmp.h)
-AC_CHECK_HEADERS(sys/un.h)
-AC_CHECK_HEADERS(sys/shm.h)
-AC_CHECK_HEADERS(sys/mman.h)
-AC_CHECK_HEADERS(sys/ipc.h)
-AC_CHECK_HEADER_STDBOOL
+dnl ScopeDesign requirements
+AC_HEADER_STDC                dnl Standard Basic C Headers
+AC_CHECK_HEADERS([getopt.h sys/ioctl.h])
+
+dnl LIBARGTABLE requirements
+AC_CHECK_HEADERS([libintl.h limits.h])
+
+dnl LIBXPA requirements
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h pwd.h setjmp.h sys/un.h sys/socket.h sys/time.h])
+
+
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
+AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
+AC_TYPE_PID_T
 AC_STRUCT_TM 
 AC_CHECK_SIZEOF(long)       dnl == Needed by XPA
 SZ_LONG=$ac_cv_sizeof_long
@@ -52,26 +51,41 @@ AC_SUBST(SZ_LONG)
 AC_CHECK_TYPES([socklen_t], [], [], [#include <sys/socket.h>])
 
 
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([sqrt hypot strdup])
-AC_CHECK_FUNCS([memset regcomp])  dnl Needed by ARGTABLE
-AC_FUNC_STRFTIME
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([bzero strchr strcspn strrchr strtol])
-AC_CHECK_FUNC(getopt_long, SYS_GETOPTLONG=1, SYS_GETOPTLONG=0)
-AC_CHECK_FUNC(regcomp,     SYS_REGEX=1,      SYS_REGEX=0)
-AC_CHECK_FUNC(strptime,    SYS_STRPTIME=1,   SYS_STRPTIME=0)
-AC_CHECK_FUNCS(strchr memcpy snprintf atexit setenv)
 
-AC_CHECK_FUNC(connect)
-if test $ac_cv_func_connect = no; then
-  AC_CHECK_LIB(socket, connect,  EXTRA_LIBS="$EXTRA_LIBS -lsocket")
-fi                                                                          
-AC_CHECK_FUNC(gethostbyname)
+# Checks for library functions.
+dnl ScopeDesign requirements
+AC_FUNC_MALLOC
+AC_CHECK_FUNCS([sqrt strdup])
+
+
+
+dnl LIBARGTABLE requirements
+AC_CHECK_FUNCS([bzero memset regcomp strchr strcspn strrchr strtol])
+AC_CHECK_FUNC(getopt_long, SYS_GETOPTLONG=1, SYS_GETOPTLONG=0)
+AC_FUNC_STRTOD
+
+dnl LIBXPA requirements
+AC_CHECK_FUNCS([alarm atexit dup2 getcwd gethostname inet_ntoa memmove putenv setenv strcasecmp strncasecmp strpbrk strstr])
+AC_CHECK_FUNCS(gethostbyname)
 if test $ac_cv_func_gethostbyname = no; then
   AC_CHECK_LIB(nsl, gethostbyname, EXTRA_LIBS="$EXTRA_LIBS -lnsl")
 fi                                                                          
+AC_FUNC_FORK
+AC_FUNC_REALLOC
+
+
+dnl === Checks of unknown origin or utility...
+dnl AC_FUNC_STRFTIME
+dnl AC_CHECK_FUNC(regcomp,     SYS_REGEX=1,      SYS_REGEX=0)
+dnl AC_CHECK_FUNC(strptime,    SYS_STRPTIME=1,   SYS_STRPTIME=0)
+dnl AC_CHECK_FUNCS(strchr memcpy snprintf atexit setenv)
+dnl AC_CHECK_FUNCS(connect)
+dnl if test $ac_cv_func_connect = no; then
+dnl   AC_CHECK_LIB(socket, connect,  EXTRA_LIBS="$EXTRA_LIBS -lsocket")
+dnl fi                                                                          
+
+
+
 
 # Define automake conditionals
 AM_CONDITIONAL(USE_SYS_GETOPTLONG, test "$SYS_GETOPTLONG" = "1")
@@ -251,47 +265,6 @@ AC_CHECK_HEADER(tpeb.h,,
 
 dnl =============================================================
 AC_MSG_RESULT( Checking other libraries ===============================)
-
-
-dnl dnl =============================================================
-dnl # Check for XPA library and headers
-dnl AC_LANG_C
-
-dnl AC_ARG_WITH( xpalib, 
-dnl         [  --with-xpalib=DIR   DIR=-LDIR, has libxpa.a],
-dnl         xpalib="$withval/" , xpalib= )
-dnl if test $xpalib; then
-dnl   if test $rpathset; then
-dnl           LDFLAGS="$LDFLAGS -L$xpalib -Wl,--rpath -Wl,$xpalib"
-dnl   else
-dnl        LDFLAGS="$LDFLAGS -L$xpalib"
-dnl   fi
-dnl fi
-dnl AC_MSG_RESULT( Checking XPA Library ==================================)
-
-dnl # Check for XPA library first
-dnl AC_CHECK_LIB(xpa,main,,
-dnl          [AC_MSG_ERROR("Can't find libxpa; use --with-xpalib")], 
-dnl             [-lm "-L$xpalib"])
-
-dnl # Check for XPA header next
-dnl AC_ARG_WITH(xpainc,
-dnl      [  --with-xpainc=VAL   VAL=-IVAL, has xpa include files ],
-dnl         [xpainc="$withval/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
-dnl      [xpainc=] )
-dnl AC_CHECK_HEADER(xpa.h,,
-dnl   [ if test $xpainc; then
-dnl    AC_MSG_ERROR("xpa headers not in location specified by --with-xpainc")
-dnl    elif test $xpalib; then
-dnl     AC_CHECK_HEADER($xpalib/../include/xpa.h,
-dnl      [xpainc="$xpalib/../include/" CPPFLAGS="$CPPFLAGS -I$xpainc"],
-dnl       AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc"))
-dnl     else
-dnl       AC_MSG_ERROR("Can't find xpa includes; use --with-xpainc")
-dnl    fi ] )
-
-dnl dnl =============================================================
-
 
 
 dnl ===============================================================

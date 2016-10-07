@@ -19,6 +19,10 @@ EXTRA_DIST = BUGS COPYRIGHT INSTALL LICENSE README
 noinst_HEADERS = ${INCL}
 
 # The program XPANS is needed by DS9 to register port information
-bin_PROGRAMS = xpans
-xpans_SOURCES = xpans.c xpap.h
-xpans_LDADD = libxpa.a
+# The programs XPASET and XPAGET are useful utilities
+bin_PROGRAMS   = xpans xpaset xpaget
+xpans_SOURCES  = xpans.c xpap.h
+xpaset_SOURCES = xpaset.c xpap.h
+xpaget_SOURCES = xpaget.c xpap.h
+LDADD          = libxpa.a
+

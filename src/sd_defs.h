@@ -29,6 +29,7 @@
 
 /* Include various GSL functions, defined as local */
 #include <gsl/gsl_math.h>
+#define hypot  gsl_hypot       // Force use GSL version over system version
 #define hypot3 gsl_hypot3
 #define nan    GSL_NAN
 #define posinf GSL_POSINF
