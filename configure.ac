@@ -432,8 +432,15 @@ dnl ===============================================================
 AC_MSG_RESULT( Checking for a FITS display utility ====================)
 AC_PATH_PROG([ds9_path],[ds9],[no]) 
 if test "x${ds9_path}" = xno; then
-   echo         "--------------------------------------------------"
-   AC_MSG_ERROR("The FITS viewer DS9 not found!  Install DS9 first!")
+   echo \
+"----------------------------------------------------------
+The FITS viewer DS9 could not be found in the system path!
+
+Please install DS9 from  http://ds9.si.edu/site/Home.html
+
+Re-run the configuration for ${PACKAGE}.
+----------------------------------------------------------"
+   AC_MSG_ERROR("Exiting configuration.")
 else
    AC_DEFINE_UNQUOTED([DS9_PATH],["$ds9_path"],[Callable ds9 Path])	
 fi
