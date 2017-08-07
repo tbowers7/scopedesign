@@ -23,7 +23,9 @@
  *
  */
 
-#include "sd_defs.h"                   // Main Package Headers
+#define wombat extern                  // wombat == protect on N_RAYS
+#include "sd_defs.h"                   // Main Package Header
+#undef wombat
 
 /* Include packages */
 #include <math.h>
@@ -42,7 +44,7 @@ scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot){
   scope_ray *rays,normal,g,det_plane;
   double angle=0.;
   
-  printf("Initializing %0.3e rays...\n",N_RAYS);
+  printf("Initializing %0.3e rays...\n",(double)N_RAYS);
   rays = (scope_ray *)malloc(N_RAYS * sizeof(scope_ray));
   *ray_status = 2222;
 

@@ -23,7 +23,9 @@
  *
  */
 
-#include "sd_defs.h"                   // Main Package Headers
+#define wombat extern                  // wombat == protect on N_RAYS
+#include "sd_defs.h"                   // Main Package Header
+#undef wombat
 
 /* Include packages */
 #include <stdio.h>
@@ -39,6 +41,7 @@
 
 /* Local headers */
 /* Test Code */
+#include "init.h"
 #include "rays.h"
 #include "illumination.h"
 #include "setup.h"
@@ -96,6 +99,9 @@ int main(int argc, char *argv[])
   /* Display a splash screen! */
   display_splash(0);
   
+  /* Initialize N_RAYS */
+  init_set_nrays();
+  printf("N_RAYS = %u\n",N_RAYS);
   
   
   /* Open DS9 in a separate thread while the code computes the geometry and
@@ -126,6 +132,8 @@ int main(int argc, char *argv[])
      starting angles */
   rays = rays_initialize(TARGET_POINT, &ir_stat, &over);
   
+  printf("N_RAYS = %u\n",N_RAYS);
+  
   
   printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
 	 ir_stat,over,4./M_PI);
@@ -141,7 +149,7 @@ int main(int argc, char *argv[])
   
   printf("Memory check: scope_ray: %d, double: %d, int: %d, bool %d\n",
 	 sizeof(scope_ray),sizeof(double),sizeof(int),sizeof(bool));
-  printf("Rays: %0.3e\n",sizeof(scope_ray)*N_RAYS);
+  printf("Rays: %0.3e\n",sizeof(scope_ray)*(double)N_RAYS);
   
   free(rays);
   free(elements);

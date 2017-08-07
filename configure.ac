@@ -56,7 +56,7 @@ AC_CHECK_TYPES([socklen_t], [], [], [#include <sys/socket.h>])
 dnl ScopeDesign requirements
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([sqrt strdup])
-
+AC_CHECK_FUNCS([sysinfo])
 
 
 dnl LIBARGTABLE requirements
@@ -137,6 +137,13 @@ AC_MSG_RESULT( Checking GSL Library ===================================)
 AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
+dnl dnl =============================================================
+dnl # Check for FREEGLUT
+dnl AC_MSG_RESULT( Checking FREEGLUT Library ==============================)
+dnl     AC_CHECK_LIB( freeglut, main, ,
+dnl         AC_MSG_ERROR("freeglut not found; use --with-freeglutlib"), [-lfreeglut] )
+dnl   fi
 
 dnl =============================================================
 dnl Checking Code from Alex's pofd_fitter

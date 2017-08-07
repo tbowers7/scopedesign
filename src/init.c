@@ -5,7 +5,7 @@
  * 
  * Timothy P. Ellsworth Bowers
  *
- * FILE: mirrors.c
+ * FILE: init.c
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,43 +23,29 @@
  *
  */
 
-#define wombat extern                  // wombat == protect on N_RAYS
+#define wombat                         // wombat == protect on N_RAYS
 #include "sd_defs.h"                   // Main Package Header
 #undef wombat
 
 /* Include packages */
-#include <math.h>
+#include <stdio.h>
+
+#if HAVE_SYSINFO
+# include <sys/sysinfo.h>
+#endif
 
 /* Local headers */
-#include "mirrors.h"
+#include "init.h"
 
 
-/* Function for calculating the surface of the primary mirror z = f(x,y) */
-double primary_z(double x, double y, raytrace_geom *geom){
-
-  double f = geom->f;
-  double v = geom->v;
+int init_set_nrays(void){
   
-  return (x*x + y*y)/(4.*f) - v;
-}
-
-/* Function for calculating the surface of the secondary mirror z = f(x,y) */
-double secondary_z(double x, double y, raytrace_geom *geom){
+#if HAVE_SYSINFO
+    struct sysinfo s;
+    sysinfo(&s);
+#endif
   
-  double e = geom->e;
-  double f = geom->f;
-  double b = geom->b;
-  double v = geom->v;
+  N_RAYS = 1e7;
   
-  return sqrt( (x*x + y*y)/(e*e -1.) + (f+b)*(f+b)/(4.*e*e)) -
-    (v - f/2. + b/2.);
+  return 0;
 }
-
-
-/* Function for calculating the surface of the focal plane z = f(x,y) */
-double focalplane_z(double x, double y, raytrace_geom *geom){
-
-  return -(geom->v + geom->b);
-}
-
-

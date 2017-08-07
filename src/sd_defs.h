@@ -29,7 +29,7 @@
 
 /* Include various GSL functions, defined as local */
 #include <gsl/gsl_math.h>
-#define hypot  gsl_hypot       // Force use GSL version over system version
+#define hypot  gsl_hypot     // Force use of GSL version over system version
 #define hypot3 gsl_hypot3
 #define nan    GSL_NAN
 #define posinf GSL_POSINF
@@ -41,27 +41,27 @@
 #if HAVE__BOOL
 #  include <stdbool.h>
 #else
-#  define true  1           // Define true and false for use with type int
+#  define true  1            // Define true and false for use with type int
 #  define false 0
 #endif
 
-/* Define values to be used */
-#define N_RAYS 1e7    // Number of rays to be used
+/* Define N_RAYS as GLOBAL variable, to be set upon initialization */
+wombat unsigned long N_RAYS; // Number of rays to be used
 
 /* Define symbolic integers for various surfaces */
-#define OPTIC_INF 20        // Infinitely far away... (or initial point)
-#define OPTIC_PRI 21        // Primary Mirror
-#define OPTIC_SEC 22        // Secondary Mirror
-#define OPTIC_TRI 23        // Tertiary Mirror
-#define OPTIC_QUA 24        // Quaternary Mirror
-#define OPTIC_QUI 25        // Quinary Mirror
-#define OPTIC_SEN 26        // Senary Mirror
-#define OPTIC_SEP 27        // Septenary Mirror
-#define OPTIC_OCT 28        // Octonary Mirror
-#define OPTIC_NON 29        // Nonary Mirror
-#define OPTIC_DEN 30        // Denary Mirror
-#define OPTIC_NFP 31        // Newtonian Focal Plane
-#define OPTIC_CFP 32        // Cassegrain Focal Plane
+#define OPTIC_INF 20         // Infinitely far away... (or initial point)
+#define OPTIC_PRI 21         // Primary Mirror
+#define OPTIC_SEC 22         // Secondary Mirror
+#define OPTIC_TRI 23         // Tertiary Mirror
+#define OPTIC_QUA 24         // Quaternary Mirror
+#define OPTIC_QUI 25         // Quinary Mirror
+#define OPTIC_SEN 26         // Senary Mirror
+#define OPTIC_SEP 27         // Septenary Mirror
+#define OPTIC_OCT 28         // Octonary Mirror
+#define OPTIC_NON 29         // Nonary Mirror
+#define OPTIC_DEN 30         // Denary Mirror
+#define OPTIC_NFP 31         // Newtonian Focal Plane
+#define OPTIC_CFP 32         // Cassegrain Focal Plane
 
 /* Obsolete defines... need to clean out rays.c */
 #define OPTIC_SF  666
@@ -70,12 +70,12 @@
 #define OPTIC_GRT 669
 
 /* Define symbolic integers for TYPE of optical element */
-#define OPTIC_PLANE    501     // Plane Mirror
-#define OPTIC_PARABOLA 502     // Parabolic Mirror
-#define OPTIC_SHPERE   503     // Spherical Mirror
-#define OPTIC_HYPER    504     // Hyperbolic Mirror
-#define OPTIC_CONVERG  505     // Converging Lens
-#define OPTIC_DIVERG   506     // Diverging Lens
+#define OPTIC_PLANE    501   // Plane Mirror
+#define OPTIC_PARABOLA 502   // Parabolic Mirror
+#define OPTIC_SHPERE   503   // Spherical Mirror
+#define OPTIC_HYPER    504   // Hyperbolic Mirror
+#define OPTIC_CONVERG  505   // Converging Lens
+#define OPTIC_DIVERG   506   // Diverging Lens
 
 /* Define symbolic integers for NHAT */
 #define NHAT_X 521     // Optical element is primarily normal to X
@@ -83,16 +83,16 @@
 #define NHAT_Z 523     // Optical element is primarily normal to Z
 
 /* Define symbolic integers for TARGET type for ray initialization */
-#define TARGET_POINT  601     // Single point source
-#define TARGET_POINTS 602     // Multiple point sources
-#define TARGET_IMAGE  605     // Use FITS image to generate ray angles
+#define TARGET_POINT  601    // Single point source
+#define TARGET_POINTS 602    // Multiple point sources
+#define TARGET_IMAGE  605    // Use FITS image to generate ray angles
 
 /* Define symbolic integers for DS9 communication */
-#define DS9_FORCE_NEW  450    // Force new DS9 window regardless of extant
-#define DS9_CANIBALIZE 451    // Force canibalization of existing DS9 window
-#define DS9_WHATEVER   452    // If extant, use (with conditions), otherwise new
-#define DS9_GET        453    // Read XPA handles from DS9
-#define DS9_SET        454    // Set new XPA handle to DS9
+#define DS9_FORCE_NEW  450   // Force new DS9 window regardless of extant
+#define DS9_CANIBALIZE 451   // Force canibalization of existing DS9 window
+#define DS9_WHATEVER   452   // If extant, use (with conditions), otherwise new
+#define DS9_GET        453   // Read XPA handles from DS9
+#define DS9_SET        454   // Set new XPA handle to DS9
 
 /* Typedef structures needed */
 

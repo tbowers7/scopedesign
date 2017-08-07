@@ -23,8 +23,9 @@
  *
  */
 
-/* Include packages */
-#include "sd_defs.h"                   // Main Package Headers
+#define wombat extern                  // wombat == protect on N_RAYS
+#include "sd_defs.h"                   // Main Package Header
+#undef wombat
 
 /* Include packages */
 #include <stdio.h>
