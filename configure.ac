@@ -26,6 +26,9 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB          dnl Needed by ARGTABLE, XPA
 
+PKG_CHECK_MODULES([GTK], [gtk+-3.0])
+
+
 
 # Checks for header files.
 dnl ScopeDesign requirements
@@ -56,7 +59,7 @@ AC_CHECK_TYPES([socklen_t], [], [], [#include <sys/socket.h>])
 dnl ScopeDesign requirements
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([sqrt strdup])
-AC_CHECK_FUNCS([sysinfo])
+AC_CHECK_FUNCS([sysinfo sysctlbyname])
 
 
 dnl LIBARGTABLE requirements
@@ -139,6 +142,7 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 
 dnl dnl =============================================================
+
 dnl # Check for FREEGLUT
 dnl AC_MSG_RESULT( Checking FREEGLUT Library ==============================)
 dnl     AC_CHECK_LIB( freeglut, main, ,
@@ -153,7 +157,7 @@ if test "x${need_fft}" = xyes; then
   AC_LANG_C
      
   AC_ARG_WITH(fftwinc,
-          [  --with-fftwinc=VAL       VAL=-IVAL, has fftw3 include files ],
+          [  --with-fftwinc=VAL      VAL=-IVAL, has fftw3 include files ],
           [fftwinc="$withval/" CPPFLAGS="$CPPFLAGS -I$fftwinc"],
           [fftwinc=] )
   AC_ARG_WITH(fftwlib, 
@@ -219,7 +223,7 @@ AC_CHECK_LIB(cfitsio,main,,
 # Check for CFITSIO header next
 AC_ARG_WITH(cfitsioinc,
      [  --with-cfitsioinc=VAL   VAL=-IVAL, has cfitsio include files ],
-        [cfitsioinc="$withval/" CPPFLAGS="$CPPFLAGS -I$cfitsioinc"],
+        [cfitsioinc="$withval/" CPPFLAGS="-I$cfitsioinc $CPPFLAGS"],
      [cfitsioinc=] )
 AC_CHECK_HEADER(fitsio.h,,
   [ if test $cfitsioinc; then
@@ -238,7 +242,7 @@ dnl =============================================================
 AC_LANG_C
 
 AC_ARG_WITH( tpeblib, 
-        [  --with-tpeblib=DIR   DIR=-LDIR, has libtpeb.a],
+        [  --with-tpeblib=DIR      DIR=-LDIR, has libtpeb.a],
         tpeblib="$withval/" , tpeblib= )
 if test $tpeblib; then
   if test $rpathset; then
@@ -256,7 +260,7 @@ AC_CHECK_LIB(tpeb,main,,
 
 # Check for TPEB header next
 AC_ARG_WITH(tpebinc,
-     [  --with-tpebinc=VAL   VAL=-IVAL, has tpeb include files ],
+     [  --with-tpebinc=VAL      VAL=-IVAL, has tpeb include files ],
         [tpebinc="$withval/" CPPFLAGS="$CPPFLAGS -I$tpebinc"],
      [tpebinc=] )
 AC_CHECK_HEADER(tpeb.h,,
@@ -277,7 +281,7 @@ AC_MSG_RESULT( Checking other libraries ===============================)
 dnl ===============================================================
 dnl BEGIN XPA-specific code
 AC_MSG_CHECKING(for threaded xpans)
-AC_ARG_ENABLE(threaded-xpans, [  --enable-threaded-xpans    build threaded xpans],
+AC_ARG_ENABLE(threaded-xpans, [  --enable-threaded-xpans build threaded xpans],
     [fun_ok=$enableval], [fun_ok=no])
 if test "$fun_ok" = "yes"; then
   AC_MSG_RESULT($fun_ok)
@@ -295,7 +299,7 @@ fi
 AC_SUBST(TLIB)
 
 AC_MSG_CHECKING(for shared library build)
-AC_ARG_ENABLE(shared, [  --enable-shared    build shared libraries],
+AC_ARG_ENABLE(shared, [  --enable-shared         build shared libraries],
     [fun_ok=$enableval], [fun_ok=no])
 if test "$fun_ok" != "no"; then
   fpic="yes"
@@ -365,21 +369,21 @@ else
   AC_MSG_RESULT(no)
 fi
 
-AC_MSG_CHECKING(for gtk)
-AC_ARG_WITH(gtk,
-    [  --with-gtk=<path>       include directory for gtk e.g. /usr/include/gtk-1.2], havelib=1, havelib=0)
-if test x"$havelib" = x1 ; then
-  AC_MSG_RESULT(yes ($withval))
-  GTK_CFLAGS="`pkg-config gtk+-2.0 --cflags` -DHAVE_GTK=1"
-  GTK_LIBS="`pkg-config gtk+-2.0 --libs`"
-  AC_DEFINE([HAVE_GTK],[1],[Define to 1 is the system has GTK])
-else
-  GTK_CFLAGS=""
-  GTK_LIBS=""
-  AC_MSG_RESULT(no)
-fi
-AC_SUBST(GTK_CFLAGS)
-AC_SUBST(GTK_LIBS)
+dnl AC_MSG_CHECKING(for gtk)
+dnl AC_ARG_WITH(gtk,
+dnl     [  --with-gtk=<path>       include directory for gtk e.g. /usr/include/gtk-1.2], havelib=1, havelib=0)
+dnl if test x"$havelib" = x1 ; then
+dnl   AC_MSG_RESULT(yes ($withval))
+dnl   GTK_CFLAGS="`pkg-config gtk+-2.0 --cflags` -DHAVE_GTK=1"
+dnl   GTK_LIBS="`pkg-config gtk+-2.0 --libs`"
+dnl   AC_DEFINE([HAVE_GTK],[1],[Define to 1 is the system has GTK])
+dnl else
+dnl   GTK_CFLAGS=""
+dnl   GTK_LIBS=""
+dnl   AC_MSG_RESULT(no)
+dnl fi
+dnl AC_SUBST(GTK_CFLAGS)
+dnl AC_SUBST(GTK_LIBS)
 
 # restore LDFLAGS
 LDFLAGS="$LDFLAGS $XLDFLAGS"

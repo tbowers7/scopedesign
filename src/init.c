@@ -30,21 +30,53 @@
 /* Include packages */
 #include <stdio.h>
 
-#if HAVE_SYSINFO
+#if HAVE__LINUX                        // Linux system information
 # include <sys/sysinfo.h>
+#endif
+
+#if HAVE__MAC                          // Mac system information
+# include <sys/types.h>
+# include <sys/sysctl.h>
 #endif
 
 /* Local headers */
 #include "init.h"
 
 
-int init_set_nrays(void){
+int init_get_sysinfo(void){
   
-#if HAVE_SYSINFO
-    struct sysinfo s;
-    sysinfo(&s);
+  /* Pull information based on system type */
+#if HAVE__LINUX
+  struct sysinfo s;
+  sysinfo(&s);
+  //printf("Linux-y-linux?\n");
+  SYS_RAM = 0;
+#elif HAVE__MAC
+  size_t size;
+  unsigned long long memsize;
+  sysctlbyname("HW_MEMSIZE", &memsize, &size, NULL, 0);
+
+  SYS_RAM = (double)memsize / 1024. / 1024.;   // In MB
+  //printf("Memory size: %ld  %0d MB\n",memsize,(int)floor(SYS_RAM));
+  
+#else
+  //printf("Something else?\n");
+  SYS_RAM = 0;
 #endif
   
+  
+  
+  
+  
+}
+
+
+int init_set_nrays(void){
+  
+  /* Variable Declarations */
+  
+  
+  /* How to do everything */
   N_RAYS = 1e7;
   
   return 0;

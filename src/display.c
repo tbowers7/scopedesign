@@ -474,6 +474,23 @@ int display_splash(int input){
   
   /* The last known screen width. */
   int screen_width = display_determine_screen_width ();
+  char sd_systype[80],sd_memsize[80];
+  
+  /* Use system type defs */
+  switch(SD_SYS){
+  case(50):
+    sprintf(sd_systype," Linux");
+    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    break;
+  case(51):
+    sprintf(sd_systype," Mac");
+    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    break;
+  case(52):
+    sprintf(sd_systype,"n unrecognized");
+    sprintf(sd_memsize,"");
+    break;
+  }
   
   /* Check output from function, and set width, if necessary */
   if (!screen_width)
@@ -501,13 +518,16 @@ int display_splash(int input){
   sprintf(text,"");  // Line 3
   display_splash_text(text,line,screen_width);
   
-  sprintf(text,"Using DS9 found at %s",DS9_PATH);  // Line 4
+  sprintf(text,"Running on a%s system%s",sd_systype,sd_memsize);  // Line 4
+  display_splash_text(text,line,screen_width);  
+  
+  sprintf(text,"Using DS9 found at %s",DS9_PATH);  // Line 5
   display_splash_text(text,line,screen_width);
   
   sprintf(text,"Using CFITSIO version %d.%d",CFITSIO_MAJOR,CFITSIO_MINOR); 
   display_splash_text(text,line,screen_width);
   
-  sprintf(text,"Using GSL version %s",GSL_VERSION);  // Line 6
+  sprintf(text,"Using GSL version %s",GSL_VERSION);  // Line 7
   display_splash_text(text,line,screen_width);
   
   printf("%s\n\n",banner);

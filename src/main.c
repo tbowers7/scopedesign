@@ -46,6 +46,7 @@
 #include "illumination.h"
 #include "setup.h"
 #include "display.h"
+#include "ui.h"
 
 /* Test Code */
 
@@ -96,12 +97,15 @@ int main(int argc, char *argv[])
      7.  Other?
   */
   
+  /* Initialize system type and check available RAM */
+  init_get_sysinfo();
+  
   /* Display a splash screen! */
   display_splash(0);
+  ui_example_window();
   
   /* Initialize N_RAYS */
   init_set_nrays();
-  printf("N_RAYS = %u\n",N_RAYS);
   
   
   /* Open DS9 in a separate thread while the code computes the geometry and

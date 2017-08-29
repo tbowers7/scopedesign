@@ -29,6 +29,7 @@
 
 
 /* Function declarations */
+int init_get_sysinfo();
 int init_set_nrays(void);
 
 #endif  /* INIT_H */

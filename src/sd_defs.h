@@ -27,6 +27,30 @@
 #define SD_DEFS_H
 
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+/* Check system type from config.h */
+#if HAVE_SYSINFO
+# define HAVE__LINUX 1
+# define HAVE__MAC   0
+# define HAVE__OTHER 0
+# define SD_SYS      50  // Linux
+#elif HAVE_SYSCTLBYNAME
+# define HAVE__LINUX 0
+# define HAVE__MAC   1
+# define HAVE__OTHER 0
+# define SD_SYS      51 // Mac
+#else
+# define HAVE__LINUX 0
+# define HAVE__MAC   0
+# define HAVE__OTHER 1
+# define SD_SYS      52 // Other
+#endif
+
+
+
 /* Include various GSL functions, defined as local */
 #include <gsl/gsl_math.h>
 #define hypot  gsl_hypot     // Force use of GSL version over system version
@@ -35,9 +59,6 @@
 #define posinf GSL_POSINF
 #define neginf GSL_NEGINF
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
 #if HAVE__BOOL
 #  include <stdbool.h>
 #else
@@ -47,6 +68,9 @@
 
 /* Define N_RAYS as GLOBAL variable, to be set upon initialization */
 wombat unsigned long N_RAYS; // Number of rays to be used
+
+/* Define SYS_RAM as GLOBAL variable, to be set upon initialization */
+wombat double SYS_RAM;       // System RAM in MB
 
 /* Define symbolic integers for various surfaces */
 #define OPTIC_INF 20         // Infinitely far away... (or initial point)
