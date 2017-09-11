@@ -27,6 +27,8 @@
 #include "sd_defs.h"                   // Main Package Header
 #undef wombat
 
+#if HAVE_GTK3
+
 /* Include packages */
 #include <gtk/gtk.h>
 
@@ -77,3 +79,5 @@ int ui_example_window (){
   
   return status;
 }
+
+#endif

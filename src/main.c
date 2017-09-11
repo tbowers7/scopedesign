@@ -102,7 +102,9 @@ int main(int argc, char *argv[])
   
   /* Display a splash screen! */
   display_splash(0);
+#if HAVE_GTK3
   ui_example_window();
+#endif
   
   /* Initialize N_RAYS */
   init_set_nrays();

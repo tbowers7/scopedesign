@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([scopedesign], [0.2.2], [tbowers@email.arizona.edu])
+AC_INIT([scopedesign], [0.2.3], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -26,8 +26,9 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB          dnl Needed by ARGTABLE, XPA
 
-PKG_CHECK_MODULES([GTK], [gtk+-3.0])
-
+PKG_CHECK_MODULES([GTK], [gtk+-3.0], 
+			 [AC_DEFINE([HAVE_GTK3], [1], [Use GTK3])],
+			 [AC_DEFINE([HAVE_GTK3], [0], [Use GTK3])] )
 
 
 # Checks for header files.
