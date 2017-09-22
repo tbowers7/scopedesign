@@ -29,6 +29,7 @@
 
 /* Include packages */
 #include <stdio.h>
+#include <gsl/gsl_math.h>
 
 #if HAVE__LINUX                        // Linux system information
 # include <sys/sysinfo.h>
@@ -41,6 +42,7 @@
 
 /* Local headers */
 #include "init.h"
+#include "rays.h"
 
 
 int init_get_sysinfo(void){
@@ -49,35 +51,49 @@ int init_get_sysinfo(void){
 #if HAVE__LINUX
   struct sysinfo s;
   sysinfo(&s);
-  //printf("Linux-y-linux?\n");
-  SYS_RAM = 0;
+  SYS_RAM = (double)s.totalram / 1024. / 1024.;  // in MB
+  
 #elif HAVE__MAC
   size_t size;
   unsigned long long memsize;
   sysctlbyname("HW_MEMSIZE", &memsize, &size, NULL, 0);
-
   SYS_RAM = (double)memsize / 1024. / 1024.;   // In MB
-  //printf("Memory size: %ld  %0d MB\n",memsize,(int)floor(SYS_RAM));
   
 #else
-  //printf("Something else?\n");
   SYS_RAM = 0;
+  
 #endif
   
-  
-  
-  
-  
+  return 0;
 }
 
 
 int init_set_nrays(void){
   
   /* Variable Declarations */
+  size_t raysize;
+  int memsize;
   
+  /* Check against system type -- if SYS_RAM == 0, default to set value */
+  if(SD_SYS == 52){
+    N_RAYS = 1e7;
+    return 1;
+  }
   
-  /* How to do everything */
-  N_RAYS = 1e7;
+  /*********************************************************/
+  /* We want the RAM used by a set of rays to be 4GB or    */
+  /* 1/4 of the total system memory, whichever is smaller. */
+  /*********************************************************/
+  
+  /* Determine amount of "usable" memory, given dictum */
+  memsize = GSL_MIN_INT( 4096, (int)floor((float)SYS_RAM / 4.) );
+  
+  /* Get size of a single ray */
+  raysize = sizeof(scope_ray);
+  
+  /* Compute number of rays that will fit within the RAM */
+  N_RAYS = (unsigned int) floor( (double)memsize * 1024. * 1024. / 
+				 (double)raysize );
   
   return 0;
 }
