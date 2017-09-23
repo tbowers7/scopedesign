@@ -19,10 +19,6 @@ functions for reading and writing FITS files to disk.
 3. [GSL](https://www.gnu.org/software/gsl/) -- Contains scientific and other
 routines required by the application.
 
-4. [The TPEB library](http://casa.colorado.edu/~ellswotp/scopedesign/) -- 
-Various and sundry "helper" or "wrapper" routines.  The ones used by ScopeDesign
-may eventually be included as an additional "convenience library".
-
 There are a couple "data" files used as examples in the code that are part of
 the [distribution tarball](http://casa.colorado.edu/~ellswotp/scopedesign/) but
 not included in the GitHub repository.
