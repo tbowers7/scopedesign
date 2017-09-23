@@ -34,7 +34,6 @@
 #include <xpa.h>                       // XPA Headers for communication with DS9
 #include <fitsio.h>                    // CFITSIO version #
 #include <gsl/gsl_version.h>           // GSL version #
-
 #include <sys/ioctl.h>                 // Contains the TIOCGWINSZ definition
 
 /* Local headers */

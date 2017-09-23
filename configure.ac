@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([scopedesign], [0.2.3], [tbowers@email.arizona.edu])
+AC_INIT([scopedesign], [0.2.4], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -237,43 +237,6 @@ AC_CHECK_HEADER(fitsio.h,,
       AC_MSG_ERROR("Can't find cfitsio includes; use --with-cfitsioinc")
    fi ] )
 
-
-dnl =============================================================
-# Check for TPEB library and headers
-AC_LANG_C
-
-AC_ARG_WITH( tpeblib, 
-        [  --with-tpeblib=DIR      DIR=-LDIR, has libtpeb.a],
-        tpeblib="$withval/" , tpeblib= )
-if test $tpeblib; then
-  if test $rpathset; then
-          LDFLAGS="$LDFLAGS -L$tpeblib -Wl,--rpath -Wl,$tpeblib"
-  else
-       LDFLAGS="$LDFLAGS -L$tpeblib"
-  fi
-fi
-AC_MSG_RESULT( Checking TPEB Library ==================================)
-
-# Check for TPEB library first
-AC_CHECK_LIB(tpeb,main,,
-         [AC_MSG_ERROR("Can't find libtpeb; use --with-tpeblib")], 
-            [-lm "-L$tpeblib"])
-
-# Check for TPEB header next
-AC_ARG_WITH(tpebinc,
-     [  --with-tpebinc=VAL      VAL=-IVAL, has tpeb include files ],
-        [tpebinc="$withval/" CPPFLAGS="$CPPFLAGS -I$tpebinc"],
-     [tpebinc=] )
-AC_CHECK_HEADER(tpeb.h,,
-  [ if test $tpebinc; then
-   AC_MSG_ERROR("tpeb headers not in location specified by --with-tpebinc")
-   elif test $tpeblib; then
-    AC_CHECK_HEADER($tpeblib/../include/tpeb.h,
-     [tpebinc="$tpeblib/../include/" CPPFLAGS="$CPPFLAGS -I$tpebinc"],
-      AC_MSG_ERROR("Can't find tpeb includes; use --with-tpebinc"))
-    else
-      AC_MSG_ERROR("Can't find tpeb includes; use --with-tpebinc")
-   fi ] )
 
 dnl =============================================================
 AC_MSG_RESULT( Checking other libraries ===============================)

@@ -30,14 +30,13 @@
 /* Include packages */
 #include <string.h>
 #include <fitsio.h>              // Contains CFITSIO function declarations
-#include <tpeb.h>                // Contains TPEB Library function declarations
 #include <gsl/gsl_errno.h>       // Contains GSL's error-handling
 #include <gsl/gsl_histogram2d.h> // Contains GSL's 2-D Histograms
-#include <tpeb.h>
 
 /* Local headers */
 #include "illumination.h"
-
+#include "fitsw.h"
+#include "imutil.h"
 
 int write_focal_plane(){
   
@@ -49,7 +48,7 @@ int write_focal_plane(){
   
   printf("We're in illumunation.c...\n");
   
-  fitswrap_write2file(fn, hd,  array, size, &status);
+  fitsw_write2file(fn, hd,  array, size, &status);
   
   return status;
   
@@ -119,7 +118,7 @@ char *illum_write_locations(scope_ray *rays, int location, int *status){
   char *hd = (char *)malloc(100 * sizeof(char));
   sprintf(hd,"%s/new-image.fits",DATADIR);
   
-  fitswrap_write2file(fn, hd,  imarr, n_sq, status);
+  fitsw_write2file(fn, hd,  imarr, n_sq, status);
   
   printf("In-function value of status: %d\n",*status);
   

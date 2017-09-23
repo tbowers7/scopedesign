@@ -81,9 +81,6 @@
 /* libpthread */
 #undef HAVE_LIBPTHREAD
 
-/* Define to 1 if you have the `tpeb' library (-ltpeb). */
-#undef HAVE_LIBTPEB
-
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
