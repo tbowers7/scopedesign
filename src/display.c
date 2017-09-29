@@ -479,11 +479,17 @@ int display_splash(int input){
   switch(SD_SYS){
   case(50):
     sprintf(sd_systype," Linux");
-    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    if(SYS_RAM < 1024.)
+      sprintf(sd_memsize," with %dMB RAM",(int)floor(SYS_RAM));
+    else
+      sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
     break;
   case(51):
     sprintf(sd_systype," Mac");
-    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    if(SYS_RAM < 1024.)
+      sprintf(sd_memsize," with %dMB RAM",(int)floor(SYS_RAM));
+    else
+      sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
     break;
   case(52):
     sprintf(sd_systype,"n unrecognized");
