@@ -1,3 +1,11 @@
+This directory contains the pieces of XPA Version 2.1.17 (Dec 15, 2016)
+needed for use with ScopeDesign.  The Makefiles are modified (narrowed)
+for the purpose of being an included "convenience library" for this
+project.
+
+Below is the README that comes with this version of XPA.
+
+=======================================================================
 This is the directory for XPA 2.0.
 
 The XPA messaging system provides seamless communication between many
