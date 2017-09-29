@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([scopedesign], [0.2.4], [tbowers@email.arizona.edu])
+AC_INIT([scopedesign], [0.3.0], [tbowers@email.arizona.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
