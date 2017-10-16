@@ -35,6 +35,7 @@
 
 /* Local headers */
 #include "rays.h"
+#include "vectors.h"
 
 
 scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot){
