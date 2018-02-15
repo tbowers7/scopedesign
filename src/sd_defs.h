@@ -36,7 +36,7 @@
 # define HAVE__MAC   0
 # define HAVE__OTHER 0
 # define SD_SYS      50  // Linux
-#elif HAVE_SYSCTLBYNAME
+#elif HAVE_SYSCTL
 # define HAVE__LINUX 0
 # define HAVE__MAC   1
 # define HAVE__OTHER 0

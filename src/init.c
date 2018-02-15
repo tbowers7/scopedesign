@@ -53,13 +53,17 @@ int init_get_sysinfo(void){
   SYS_RAM = (double)s.totalram / 1024. / 1024.;  // in MB
   
 #elif HAVE__MAC
-  size_t size;
-  unsigned long long memsize;
-  sysctlbyname("HW_MEMSIZE", &memsize, &size, NULL, 0);
-  SYS_RAM = (double)memsize / 1024. / 1024.;   // In MB
+  int mib[2];
+  int64_t physical_memory;
+  size_t length;
+  mib[0] = CTL_HW;
+  mib[1] = HW_MEMSIZE;
+  length = sizeof(int64_t);
+  sysctl(mib, 2, &physical_memory, &length, NULL, 0);
+  SYS_RAM = (double)physical_memory / 1024. / 1024.;   // In MB
   
 #else
-  SYS_RAM = 0;
+  SYS_RAM = 0.;
   
 #endif
   
