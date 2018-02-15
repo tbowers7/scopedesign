@@ -200,6 +200,7 @@ double raytrace_distroot(double t, void *params){
   
   /* Select proper optical surface, based on parameter passed */
   
+  /*
   switch(surf){
   case(OPTIC_PRI):
     z2 = primary_z(x1 + t*xa, y1 + t*ya, &geom);
@@ -210,7 +211,6 @@ double raytrace_distroot(double t, void *params){
   case(OPTIC_FP):
     z2 = focalplane_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
-    /*
   case(OPTIC_GRS):
     z2 = sph_grating_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
@@ -220,9 +220,10 @@ double raytrace_distroot(double t, void *params){
   case(OPTIC_SF):
     z2 = detector_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
-    */
   }
-    
+  */
+  z2 = 0.;   // Temporary fix to eliminate compiler warnings (2/15/18)
+  
   /* Return condition on root */
   return z1 + t*za - z2;
 }
