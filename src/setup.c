@@ -33,6 +33,7 @@
 /* Local headers */
 #include "setup.h"
 #include "vectors.h"
+#include "demo.h"
 
 
 int setup_orient_optic(scope_optic *optic){
