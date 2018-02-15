@@ -30,6 +30,7 @@ USA.
 
 #include "argtable2.h"
 #include <limits.h>
+#include <ctype.h>           // Added 2/15/2018, needed for isspace(), toupper()
 
 /* local error codes */
 enum {EMINCOUNT=1,EMAXCOUNT,EBADINT,EOVERFLOW};
