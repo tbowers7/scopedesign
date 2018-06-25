@@ -42,7 +42,7 @@
 /* Test Code */
 #include "init.h"
 #include "rays.h"
-#include "illumination.h"
+#include "images.h"
 #include "setup.h"
 #include "display.h"
 #include "ui.h"

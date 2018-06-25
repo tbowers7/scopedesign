@@ -42,12 +42,18 @@
 /*   Function Declarations   */
 /* ========================= */
 
-fitsfile *fitsw_open_read(char *filename, int *status);
-fitsfile *fitsw_open_readwrite(char *filename, int *status);
+/***** Public-Facing Functions *****/
+
 double  **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
 			      int data_type, int *status);
 void      fitsw_write2file(char *fileout, char *copyhdr, double **array, 
 			  long subsize[2], int *status);
-void      fitsw_catcherror(int *status);
+
+/***** Private Functions Internal to FitsWrap *****/
+
+fitsfile *fw_open_r(char *filename, int *status);
+fitsfile *fw_open_rw(char *filename, int *status);
+void      fw_make_header();
+void      fw_catcherror(int *status);
 
 #endif  /* FITSW_H */

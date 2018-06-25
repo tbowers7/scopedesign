@@ -32,102 +32,14 @@
 #include <time.h>                      // To update FITS headers
 
 /* Local headers */
-#include "fitsw.h"
-#include "imutil.h"
+#include "fitswrap.h"
+#include "images.h"
 
-/* Routine for opening FITS file READONLY with error checking */
-fitsfile *fitsw_open_read(char *filename, int *status){
-  
-  fitsfile *fitsfp;
-  
-  if(fits_open_file(&fitsfp, filename, READONLY, status)){
-    fitsw_catcherror(status);    // Send pointer not value
-  }
-  
-  return fitsfp;
-}
+/***** Public-Facing Functions *****/
 
-
-/* Routine for opening FITS file READONLY with error checking */
-fitsfile *fitsw_open_readwrite(char *filename, int *status){
-  
-  fitsfile *fitsfp;
-  
-  if(fits_open_file(&fitsfp, filename, READWRITE, status)){
-    fitsw_catcherror(status);    // Send pointer not value
-  }
-  
-  return fitsfp;
-}
-
-
-/* Routine for reading FITS into array, starting at point, and w/ size */
-/* This version assumes an open FITS file, and accepts the fitsfile pointer */
-double **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
-			      int data_type, int *status){
-  
-  /* Variable declarations & Initilaztion */
-  int i,naxis,bitpix;
-  long fpixel[2],naxes[2];
-  *status=0;
-  
-  /* Allocate space for array */
-  double **array = imutil_alloc_2darray(xysize);
-  
-  
-  /* Read in FITS file using CFITSIO library routines - w/ error checking */
-  /* Note: xystart[2] SHOULD be in 'array' notation (i.e. 0-1023), and this
-     routine needs to convert these into 'human' notation (i.e. 1-1024). */
-  
-  /* ERROR CHECKING & CONVERTING NOTATION */
-    /* Get image file parameters */
-    if(fits_get_img_param(fitsfp, 2, &bitpix, &naxis, naxes, status)){
-      fitsw_catcherror(status);    // Send pointer not value
-    }    
-    /* Error catching -- number of axes */
-    if(naxis != 2){
-      fprintf(stderr,"Error: only 2D images are supported.\n\n");
-      fits_close_file(fitsfp,status);
-      exit(1);
-    }
-
-    /* Notation Shift */
-    long xstart = xystart[0] + 1;
-    long ystart = xystart[1] + 1;
-    
-
-  /* Check to see if subsection goes beyond image bounds */
-  // First Check x
-  if( xstart < 1 || (xstart + xysize[0] - 1) > naxes[0]){
-    fprintf(stderr,"Error: subsection is out of bounds\n");
-    fits_close_file(fitsfp,status);
-    exit(1);
-  }
-  // Then Check y
-  if( ystart < 1 || (ystart + xysize[1] - 1) > naxes[1]){
-    fprintf(stderr,"Error: subsection is out of bounds\n");
-    fits_close_file(fitsfp,status);
-    exit(1);
-  }
-  
-  
-  /* Read in the FITS file */  
-  fpixel[0] = xstart;              // Set initial coordinate in the x-axis.
-  for(i=0; i < xysize[1]; i++){    // Loop over xysize[1] (i.e. y) rows
-    fpixel[1] = ystart + i;        // Set initial y-coordinate here...
-    
-    if(fits_read_pix(fitsfp, data_type, fpixel, xysize[0], NULL,
-		     array[i], NULL, status)){
-      fits_report_error(stderr,*status);
-      break;
-    }
-  }
-  
-  return array;
-}
-
-
-/* Function to write array to FITS file, and copy header info from other file */
+/* Function to write array to FITS file */
+/* NOTE: FUNCTION CURRENTLY COPIES HEADER FROM ANOTHER FILE... MODIFY TO 
+   CREATE NEW HEADER AND POPULATE IT WITH REASONABLE THINGS! */
 void fitsw_write2file(char *fileout, char *copyhdr, double **array, 
 			  long write_size[2], int *status){
   
@@ -141,13 +53,13 @@ void fitsw_write2file(char *fileout, char *copyhdr, double **array,
   *status = 0;
 
   /* Open file from which header will be copied */
-  hdrfp = fitsw_open_read(copyhdr, status);
+  hdrfp = fw_open_r(copyhdr, status);
 
   /* Check for output file -- create & open for write */
   if(access(fileout,F_OK) == 0)          // Check if output file exists
     remove(fileout);                     // If yes, remove it
   if(fits_create_file(&fitsfp, fileout, status)){
-    fitsw_catcherror(status);    // Send pointer not value
+    fw_catcherror(status);    // Send pointer not value
   }
 
   mod_comm = "Modified by fitsw routine, TPEB.";
@@ -205,14 +117,119 @@ void fitsw_write2file(char *fileout, char *copyhdr, double **array,
   
   /* Report any CFITSIO errors to stderr */
   if(!*status)
-    fitsw_catcherror(status);    // Send pointer not value
+    fw_catcherror(status);    // Send pointer not value
   
   return;
 }
 
 
+
+
+
+
+/* Routine for reading FITS into array, starting at point, and w/ size */
+/* This version assumes an open FITS file, and accepts the fitsfile pointer */
+double **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
+			      int data_type, int *status){
+  
+  /* Variable declarations & Initilaztion */
+  int i,naxis,bitpix;
+  long fpixel[2],naxes[2];
+  *status=0;
+  
+  /* Allocate space for array */
+  double **array = imutil_alloc_2darray(xysize);
+  
+  
+  /* Read in FITS file using CFITSIO library routines - w/ error checking */
+  /* Note: xystart[2] SHOULD be in 'array' notation (i.e. 0-1023), and this
+     routine needs to convert these into 'human' notation (i.e. 1-1024). */
+  
+  /* ERROR CHECKING & CONVERTING NOTATION */
+    /* Get image file parameters */
+    if(fits_get_img_param(fitsfp, 2, &bitpix, &naxis, naxes, status)){
+      fw_catcherror(status);    // Send pointer not value
+    }    
+    /* Error catching -- number of axes */
+    if(naxis != 2){
+      fprintf(stderr,"Error: only 2D images are supported.\n\n");
+      fits_close_file(fitsfp,status);
+      exit(1);
+    }
+
+    /* Notation Shift */
+    long xstart = xystart[0] + 1;
+    long ystart = xystart[1] + 1;
+    
+
+  /* Check to see if subsection goes beyond image bounds */
+  // First Check x
+  if( xstart < 1 || (xstart + xysize[0] - 1) > naxes[0]){
+    fprintf(stderr,"Error: subsection is out of bounds\n");
+    fits_close_file(fitsfp,status);
+    exit(1);
+  }
+  // Then Check y
+  if( ystart < 1 || (ystart + xysize[1] - 1) > naxes[1]){
+    fprintf(stderr,"Error: subsection is out of bounds\n");
+    fits_close_file(fitsfp,status);
+    exit(1);
+  }
+  
+  
+  /* Read in the FITS file */  
+  fpixel[0] = xstart;              // Set initial coordinate in the x-axis.
+  for(i=0; i < xysize[1]; i++){    // Loop over xysize[1] (i.e. y) rows
+    fpixel[1] = ystart + i;        // Set initial y-coordinate here...
+    
+    if(fits_read_pix(fitsfp, data_type, fpixel, xysize[0], NULL,
+		     array[i], NULL, status)){
+      fits_report_error(stderr,*status);
+      break;
+    }
+  }
+  
+  return array;
+}
+
+
+/***** Private Functions Internal to FitsWrap *****/
+
+/* Routine for opening FITS file READONLY with error checking */
+fitsfile *fw_open_r(char *filename, int *status){
+  
+  fitsfile *fitsfp;
+  
+  if(fits_open_file(&fitsfp, filename, READONLY, status)){
+    fw_catcherror(status);    // Send pointer not value
+  }
+  
+  return fitsfp;
+}
+
+
+/* Routine for opening FITS file READONLY with error checking */
+fitsfile *fw_open_rw(char *filename, int *status){
+  
+  fitsfile *fitsfp;
+  
+  if(fits_open_file(&fitsfp, filename, READWRITE, status)){
+    fw_catcherror(status);    // Send pointer not value
+  }
+  
+  return fitsfp;
+}
+
+
+/* Function to create basic header for FITS file */
+void fw_make_header(){
+
+  return;
+}
+
+
 /* Function to catch errors thrown by CFITSIO */
-void fitsw_catcherror(int *status){
+void fw_catcherror(int *status){
   fits_report_error(stderr,*status);
   
   if(*status){                        // If no error, go on...

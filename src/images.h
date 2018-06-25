@@ -3,7 +3,7 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * FILE: illumination.h
+ * FILE: images.h
  * 
  * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
  *
@@ -23,16 +23,22 @@
  */
 
 
-#ifndef ILLUMINATION_H
-#define ILLUMINATION_H
+#ifndef IMAGES_H
+#define IMAGES_H
 
 
 /* Function declarations */
 int   write_focal_plane();
 char *illum_write_locations(scope_ray *rays, int location, int *status);
 
+double **imutil_alloc_2darray(long *);
+void     imutil_free_2darray(double **, long *);
+double  *imutil_2d_to_1d(double **, long *);
+double **imutil_get_subsection(double **, long *, long *, long *);
+void     imutil_transpose(double **, double **, int, int);
 
-#endif  /* ILLUMINATION_H */
+
+#endif  /* IMAGES_H */
 
 
 
