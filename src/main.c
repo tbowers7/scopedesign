@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
   printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
 	 ir_stat,over,4./M_PI);
   
-  fn_startpos = illum_write_locations(rays, OPTIC_INF, &wfp_stat);
+  fn_startpos = images_write_locations(rays, OPTIC_INF, &wfp_stat);
   printf("File location and status: %s %d\n",fn_startpos, wfp_stat);
   
   /* Display ray starting location in the DS9 window */

@@ -38,26 +38,43 @@
 #include "images.h"
 #include "fitswrap.h"
 
-int write_focal_plane(){
-  
-  char *fn="filename";
-  char *hd="hd";
-  double **array;
-  long size[2];
-  int status=0;
-  
-  printf("We're in illumunation.c...\n");
-  
-  fitsw_write2file(fn, hd,  array, size, &status);
-  
-  return status;
-  
-  
+/***** Array Allocation and Freeing Functions *****/
+
+/* Function to allocate space for a 2-D array of double */
+double **images_alloc_2darray(long *size){
+
+  /* Variable Declarations */
+  int mm;
+  double **new_array;
+
+  new_array = (double **)malloc(size[1] * sizeof(double *));
+  for(mm=0; mm<size[1]; mm++)
+    new_array[mm] = (double *)calloc(size[0], sizeof(double));
+
+  return new_array;
 }
 
 
+/* Function to free space occupied by 2-D array */
+void images_free_2darray(double **array, long *size){
+  
+  /* Variable Declarations */
+  int nn;
+
+  for(nn=0; nn < size[1]; nn++)
+    free(array[nn]);
+  free(array);
+    
+  return;
+}
+
+
+/***** High-Level Write-to-File Functions *****/
+
+
+
 /* Function (in progress) to write ray locations to a FITS file. */
-char *illum_write_locations(scope_ray *rays, int location, int *status){
+char *images_write_locations(scope_ray *rays, int location, int *status){
   
   /* Variable Declarations */
   int  errval;
@@ -74,7 +91,7 @@ char *illum_write_locations(scope_ray *rays, int location, int *status){
   
   gsl_histogram2d *h = gsl_histogram2d_alloc(nx, ny);
   long n_sq[2] = {nx,ny};
-  double **imarr = imutil_alloc_2darray(n_sq);
+  double **imarr = images_alloc_2darray(n_sq);
   
   
   /* Set range for histogram */
@@ -128,33 +145,28 @@ char *illum_write_locations(scope_ray *rays, int location, int *status){
   return strdup(fn);            // Return a properly malloc'd and sized string
 }
 
-/* Function to allocate space for a 2-D array of double */
-double **imutil_alloc_2darray(long *size){
-
-  /* Variable Declarations */
-  int mm;
-  double **new_array;
-
-  new_array = (double **)malloc(size[1] * sizeof(double *));
-  for(mm=0; mm<size[1]; mm++)
-    new_array[mm] = (double *)calloc(size[0], sizeof(double));
-
-  return new_array;
-}
 
 
-/* Function to free space occupied by 2-D array */
-void imutil_free_2darray(double **array, long *size){
+
+/***** Other Left-Over Functions, Possibly to Use *****/
+
+int write_focal_plane(){
   
-  /* Variable Declarations */
-  int nn;
-
-  for(nn=0; nn < size[1]; nn++)
-    free(array[nn]);
-  free(array);
-    
-  return;
+  char *fn="filename";
+  char *hd="hd";
+  double **array;
+  long size[2];
+  int status=0;
+  
+  printf("We're in illumunation.c...\n");
+  
+  fitsw_write2file(fn, hd,  array, size, &status);
+  
+  return status;
+  
+  
 }
+
 
 
 /* Function for reading 2-D image array into 1-D array for statistics */
@@ -185,7 +197,7 @@ double **imutil_get_subsection(double **full, long *f_size, long *s_size, long *
   double **sub;
   
   /* Allocate space for subsection array */
-  sub = imutil_alloc_2darray(s_size);
+  sub = images_alloc_2darray(s_size);
   
   /* Check that subsection does not go beyond the bounds of the image */
   if(start[0] + s_size[0] - 1 > f_size[0] ||
@@ -202,6 +214,8 @@ double **imutil_get_subsection(double **full, long *f_size, long *s_size, long *
 }
 
 
+
+
 /* imutil_transpose() takes an (n x m) array and builds the (m x n) transpose.
    Care is taken in case input and transpose are the same array in calling
    routine. */
@@ -213,7 +227,7 @@ void imutil_transpose(double **a, double **at, int n, int m){
   double **trans;
   
   /* Allocate transpose array */
-  trans = imutil_alloc_2darray(size);
+  trans = images_alloc_2darray(size);
 
   /* Build the transpose array */
   for(x=0;x<n;x++){
@@ -230,7 +244,7 @@ void imutil_transpose(double **a, double **at, int n, int m){
   }
   
   /* Free the temproary transpose array */
-  imutil_free_2darray(trans,size);
+  images_free_2darray(trans,size);
 
   return;
 }

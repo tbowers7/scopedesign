@@ -138,7 +138,7 @@ double **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
   *status=0;
   
   /* Allocate space for array */
-  double **array = imutil_alloc_2darray(xysize);
+  double **array = images_alloc_2darray(xysize);
   
   
   /* Read in FITS file using CFITSIO library routines - w/ error checking */

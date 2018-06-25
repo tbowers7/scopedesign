@@ -28,11 +28,16 @@
 
 
 /* Function declarations */
-int   write_focal_plane();
-char *illum_write_locations(scope_ray *rays, int location, int *status);
 
-double **imutil_alloc_2darray(long *);
-void     imutil_free_2darray(double **, long *);
+/***** Array Allocation and Freeing Functions *****/
+double **images_alloc_2darray(long *);
+void     images_free_2darray(double **, long *);
+
+/***** High-Level Write-to-File Functions *****/
+char    *images_write_locations(scope_ray *rays, int location, int *status);
+
+/***** Other Left-Over Functions, Possibly to Use *****/
+int      write_focal_plane();
 double  *imutil_2d_to_1d(double **, long *);
 double **imutil_get_subsection(double **, long *, long *, long *);
 void     imutil_transpose(double **, double **, int, int);
