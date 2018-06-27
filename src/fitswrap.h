@@ -26,12 +26,7 @@
 #ifndef FITSWRAP_H
 #define FITSWRAP_H
 
-
-#ifndef HAVE_FITSIO_H
-# define HAVE_FITSIO_H
-# include <fitsio.h>
-#endif
-
+#include <fitsio.h>             // CFITSIO
 
 #define FITSW_NOFILE_EXIT 2104  // Codes used by fitsw_catcherror()
 #define FITSW_NOFILE_CONT 2105

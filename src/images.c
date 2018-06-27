@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <fitsio.h>              // Contains CFITSIO function declarations
 #include <gsl/gsl_errno.h>       // Contains GSL's error-handling
 #include <gsl/gsl_histogram2d.h> // Contains GSL's 2-D Histograms
 
