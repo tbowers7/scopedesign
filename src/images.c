@@ -77,7 +77,7 @@ void images_free_2darray(double **array, long *size){
 char *images_write_locations(scope_ray *rays, int location, int *status){
   
   /* Variable Declarations */
-  int  errval;
+  int  errval, bitpix;
   long i,j,k,nx,ny;
   char fn[256];
   *status = 0;
@@ -117,12 +117,15 @@ char *images_write_locations(scope_ray *rays, int location, int *status){
     {
     case OPTIC_INF:
       sprintf(fn,"initial_illumination.fits");
+      bitpix = ULONG_IMG;
       break;
     case OPTIC_PRI:
       sprintf(fn,"primary_illumination.fits");
+      bitpix = ULONG_IMG;
       break;
     case OPTIC_SEC:
       sprintf(fn,"secondary_illumination.fits");
+      bitpix = ULONG_IMG;
       break;
       
       
@@ -132,10 +135,8 @@ char *images_write_locations(scope_ray *rays, int location, int *status){
   
   
   /* Write it out! */
-  char *hd = (char *)malloc(100 * sizeof(char));
-  sprintf(hd,"%s/new-image.fits",DATADIR);
   
-  fitsw_write2file(fn, hd,  imarr, n_sq, status);
+  fitsw_write2file(fn, n_sq, imarr, bitpix, status);
   
   printf("In-function value of status: %d\n",*status);
   
@@ -156,11 +157,11 @@ int write_focal_plane(){
   char *hd="hd";
   double **array;
   long size[2];
-  int status=0;
+  int status=0, bitpix=DOUBLE_IMG;
   
   printf("We're in illumunation.c...\n");
   
-  fitsw_write2file(fn, hd,  array, size, &status);
+  fitsw_write2file(fn, size, array, bitpix, &status);
   
   return status;
   

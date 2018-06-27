@@ -28,7 +28,7 @@
 
 /* Include packages */
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 #include <time.h>                      // To update FITS headers
 
 /* Local headers */
@@ -40,63 +40,40 @@
 /* Function to write array to FITS file */
 /* NOTE: FUNCTION CURRENTLY COPIES HEADER FROM ANOTHER FILE... MODIFY TO 
    CREATE NEW HEADER AND POPULATE IT WITH REASONABLE THINGS! */
-void fitsw_write2file(char *fileout, char *copyhdr, double **array, 
-			  long write_size[2], int *status){
+void fitsw_write2file(char *fileout, long naxes[2], double **array, 
+		      int bitpix, int *status){
   
   /* Variable Declarations & Initializations */
-  int k,naxis,bitpix;
-  long fpixel[2],naxes[2],bzero;
-  char buf_date[FLEN_VALUE],buf_time[FLEN_VALUE],*mod_comm;
-  fitsfile *fitsfp,*hdrfp;
+  int k;
+  long fpixel[2];
+  char buf_date[FLEN_VALUE],buf_time[FLEN_VALUE],*mod_comm,*fn;
+  fitsfile *fitsfp;
   time_t now;
   struct tm *ptr;
+
+  /* Set CFITSIO status = 0 before we begin */
   *status = 0;
-
-  /* Open file from which header will be copied */
-  hdrfp = fw_open_r(copyhdr, status);
-
-  /* Check for output file -- create & open for write */
-  if(access(fileout,F_OK) == 0)          // Check if output file exists
-    remove(fileout);                     // If yes, remove it
-  if(fits_create_file(&fitsfp, fileout, status)){
-    fw_catcherror(status);    // Send pointer not value
-  }
-
-  mod_comm = "Modified by fitsw routine, TPEB.";
-  /* Copy header from copyhdr FITS file. */
-  fits_copy_header(hdrfp, fitsfp, status);  // Copy header from input FITS
-  fits_get_img_param(hdrfp, 2 ,&bitpix, &naxis, naxes, status);
-  fits_read_key(hdrfp, TLONG, "BZERO", &bzero, NULL, status);
-
-  /* Check for needed updates */
-    // Writing new FITS as double
-    if(bitpix != DOUBLE_IMG){
-      bitpix = DOUBLE_IMG;
-      fits_update_key(fitsfp, TSHORT, "BITPIX", &bitpix, mod_comm, status);
-    }
-    
-    // check for 'zero level' (needed for type long FITS headers)
-    // NOTE: If input header does not contain this keyword (status = 202), 
-    // skip update & reset CFITSIO status to zero.
-    
-    if(bzero != 0 || *status != 202){  
-      bzero = 0;
-      fits_update_key(fitsfp, TSHORT, "BZERO", &bzero, mod_comm, status);
-    }
-    *status = 0;                       // Reset Status
-    
-    // Check new axis lengths are correct
-    if(naxes[0] != write_size[0])
-      fits_update_key(fitsfp, TULONG,"NAXIS1",&write_size[0],mod_comm,status);
-    if(naxes[1] != write_size[1])
-      fits_update_key(fitsfp, TULONG,"NAXIS2",&write_size[1],mod_comm,status);
-    
-    
+  
+  
+  
+  /* Open FITS file for writing, overwrite existing file */
+  fn = (char *)malloc(sizeof(char) * strlen(fileout)+1);
+  sprintf(fn,"!%s",fileout);     // CFITSIO will overwrite file prepended w/ "!"
+  if( fits_create_file(&fitsfp, fn, status) )
+    fw_catcherror(status);       // Send pointer not value
+  free(fn);                      // Free "!" filename
+  
+  /* Create image HDU */
+  int naxis = 2;                 // Routine is specific for 2-D images
+  if( fits_create_img(fitsfp, bitpix, naxis, naxes, status) )
+    fw_catcherror(status);       // Send pointer not value
+  
+  
   /* Write array to file */
   fpixel[0] = 1;
-  for(k=0; k < write_size[1]; k++){       // Loop over size[1] rows (i.e. y)
+  for(k=0; k < naxes[1]; k++){       // Loop over size[1] rows (i.e. y)
     fpixel[1] = k + 1; 
-    if(fits_write_pix(fitsfp, TDOUBLE, fpixel, write_size[0], array[k], 
+    if(fits_write_pix(fitsfp, TDOUBLE, fpixel, naxes[0], array[k], 
   		      status)){
       fits_report_error(stderr,*status);
       break;
@@ -113,13 +90,13 @@ void fitsw_write2file(char *fileout, char *copyhdr, double **array,
   
   /* Clean up */
   fits_close_file(fitsfp, status);
-  fits_close_file(hdrfp,  status);
   
   /* Report any CFITSIO errors to stderr */
   if(!*status)
     fw_catcherror(status);    // Send pointer not value
   
   return;
+  
 }
 
 
@@ -230,7 +207,7 @@ void fw_make_header(){
 
 /* Function to catch errors thrown by CFITSIO */
 void fw_catcherror(int *status){
-  fits_report_error(stderr,*status);
+  fits_report_error(stderr,*status);  // Report error using FITSIO routine
   
   if(*status){                        // If no error, go on...
     /* Add error-catching code here */
