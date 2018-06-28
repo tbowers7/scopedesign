@@ -168,6 +168,7 @@ typedef struct{
 
 // Telescope Structure for ScopeDesign Consumption
 typedef struct{
+  char        *name;        // Name of telescope design
   scope_optic primary;      // Provide space for 10 optical elements
   scope_optic secondary;    // 
   scope_optic tertiary;     // 

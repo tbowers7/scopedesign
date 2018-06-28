@@ -28,7 +28,7 @@
 
 
 /* Function declarations */
-void demo_newtonian(scope_optic *, scope_optic *, scope_element *, int *);
+void demo_newtonian(scope_scope *, scope_element *, int *);
 
 
 #endif  /* DEMO_H */

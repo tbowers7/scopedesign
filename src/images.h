@@ -34,10 +34,11 @@ double **images_alloc_2darray(long *);
 void     images_free_2darray(double **, long *);
 
 /***** High-Level Write-to-File Functions *****/
-char    *images_write_locations(scope_ray *rays, int location, int *status);
+char    *images_write_locations(scope_ray *rays, int location, char *telname,
+				int *status);
 
 /***** Other Left-Over Functions, Possibly to Use *****/
-int      write_focal_plane();
+int      write_focal_plane(char *);
 double  *imutil_2d_to_1d(double **, long *);
 double **imutil_get_subsection(double **, long *, long *, long *);
 void     imutil_transpose(double **, double **, int, int);

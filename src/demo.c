@@ -36,38 +36,40 @@
 #include "setup.h"
 
 /* Have a hard-wired Newtonian telescope as a DEMO, but also for code testing */
-void demo_newtonian(scope_optic *primary, 
-		    scope_optic *secondary, 
+void demo_newtonian(scope_scope *telescope,
 		    scope_element *elements,
 		    int *nelem){
+
+  telescope->name = (char *)malloc(sizeof(char) * 256);
+  sprintf(telescope->name,"Newtonian Demo");
   
   /* Set up the primary mirror */
-  primary->type = OPTIC_PARABOLA;
-  primary->dmaj = 10. *(2.54/100.);   // 10" mirror, keep everything in meters
-  primary->dmin = 10. *(2.54/100.);   // 10" mirror, keep everything in meters
-  primary->vmin = 0.;                 // Axially symmetric
-  primary->f    = primary->dmaj * 6.; // f/6 parabola
-  primary->cx   = 0.;                 // Center mirror at (0,0,0)
-  primary->cy   = 0.;
-  primary->cz   = 0.;
-  primary->nx   = 0.;                 // Point mirror straight up along z-hat
-  primary->ny   = 0.;
-  primary->nz   = 1.;
-  primary->nhat = setup_orient_optic(&primary);
+  telescope->primary.type = OPTIC_PARABOLA;
+  telescope->primary.dmaj = 10. *(2.54/100.);   // 10" mirror, keep everything in meters
+  telescope->primary.dmin = 10. *(2.54/100.);   // 10" mirror, keep everything in meters
+  telescope->primary.vmin = 0.;                 // Axially symmetric
+  telescope->primary.f    = telescope->primary.dmaj * 6.; // f/6 parabola
+  telescope->primary.cx   = 0.;                 // Center mirror at (0,0,0)
+  telescope->primary.cy   = 0.;
+  telescope->primary.cz   = 0.;
+  telescope->primary.nx   = 0.;                 // Point mirror straight up along z-hat
+  telescope->primary.ny   = 0.;
+  telescope->primary.nz   = 1.;
+  telescope->primary.nhat = setup_orient_optic(&telescope->primary);
   
   /* Set up the secondary mirror */
-  secondary->type = OPTIC_PLANE;
-  secondary->dmaj = 2. *(2.54/100.) * M_SQRT2; // 2" plane mirror -- projection
-  secondary->dmin = 2. *(2.54/100.);           // 2" plane mirror -- projection
-  secondary->vmin = NHAT_Y;                    // Minor axis along y-direction
-  secondary->f    = posinf;
-  secondary->cx   = 0.;
-  secondary->cy   = 0.;
-  secondary->cz   = primary->dmaj * 0.9;       // 90% of the way to focus?
-  secondary->nx   = M_SQRT1_2;                 // (1,0,-1)
-  secondary->ny   = 0.;
-  secondary->nz   = -M_SQRT1_2;
-  secondary->nhat = setup_orient_optic(&secondary);
+  telescope->secondary.type = OPTIC_PLANE;
+  telescope->secondary.dmaj = 2. *(2.54/100.) * M_SQRT2; // 2" plane mirror -- projection
+  telescope->secondary.dmin = 2. *(2.54/100.);           // 2" plane mirror -- projection
+  telescope->secondary.vmin = NHAT_Y;                    // Minor axis along y-direction
+  telescope->secondary.f    = posinf;
+  telescope->secondary.cx   = 0.;
+  telescope->secondary.cy   = 0.;
+  telescope->secondary.cz   = telescope->primary.dmaj * 0.9;       // 90% of the way to focus?
+  telescope->secondary.nx   = M_SQRT1_2;                 // (1,0,-1)
+  telescope->secondary.ny   = 0.;
+  telescope->secondary.nz   = -M_SQRT1_2;
+  telescope->secondary.nhat = setup_orient_optic(&telescope->secondary);
   
   /* Tell the calling function how many elements light passed by or reflects
      off of before coming to the focal plane */

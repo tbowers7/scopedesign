@@ -73,7 +73,8 @@ void images_free_2darray(double **array, long *size){
 
 
 /* Function (in progress) to write ray locations to a FITS file. */
-char *images_write_locations(scope_ray *rays, int location, int *status){
+char *images_write_locations(scope_ray *rays, int location, char *telname,
+			     int *status){
   
   /* Variable Declarations */
   int  errval, bitpix;
@@ -135,7 +136,7 @@ char *images_write_locations(scope_ray *rays, int location, int *status){
   
   /* Write it out! */
   
-  fitsw_write2file(fn, n_sq, imarr, bitpix, status);
+  fitsw_write2file(fn, n_sq, imarr, bitpix, telname, status);
   
   printf("In-function value of status: %d\n",*status);
   
@@ -150,7 +151,7 @@ char *images_write_locations(scope_ray *rays, int location, int *status){
 
 /***** Other Left-Over Functions, Possibly to Use *****/
 
-int write_focal_plane(){
+int write_focal_plane(char *telname){
   
   char *fn="filename";
   char *hd="hd";
@@ -160,7 +161,7 @@ int write_focal_plane(){
   
   printf("We're in illumunation.c...\n");
   
-  fitsw_write2file(fn, size, array, bitpix, &status);
+  fitsw_write2file(fn, size, array, bitpix, telname, &status);
   
   return status;
   

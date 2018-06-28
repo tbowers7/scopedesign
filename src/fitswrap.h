@@ -40,9 +40,9 @@
 /***** Public-Facing Functions *****/
 
 double  **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
-			      int data_type, int *status);
+			   int data_type, int *status);
 void      fitsw_write2file(char *fileout, long naxes[2], double **array, 
-			   int bitpix, int *status);
+			   int bitpix, char *telname, int *status);
 
 /***** Private Functions Internal to FitsWrap *****/
 

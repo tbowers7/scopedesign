@@ -41,7 +41,7 @@
 /* NOTE: FUNCTION CURRENTLY COPIES HEADER FROM ANOTHER FILE... MODIFY TO 
    CREATE NEW HEADER AND POPULATE IT WITH REASONABLE THINGS! */
 void fitsw_write2file(char *fileout, long naxes[2], double **array, 
-		      int bitpix, int *status){
+		      int bitpix, char *telname, int *status){
   
   /* Variable Declarations & Initializations */
   int k;
@@ -68,6 +68,22 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
   if( fits_create_img(fitsfp, bitpix, naxis, naxes, status) )
     fw_catcherror(status);       // Send pointer not value
   
+  /* Write the UT date and time of file creation */
+  time(&now);
+  ptr = gmtime(&now);
+  strftime(buf_date, FLEN_VALUE, "%Y-%m-%d", ptr);
+  strftime(buf_time, FLEN_VALUE, "%H:%M:%S", ptr);
+  fits_update_key(fitsfp, TSTRING, "DATE-OBS", buf_date,
+		  "UT date of observation", status);
+  fits_update_key(fitsfp, TSTRING, "TIME-OBS", buf_time,
+		  "UT time of observation", status);
+  
+  /* Add various FITS keywords, specific to ScopeDesign */
+  fits_write_key(fitsfp, TSTRING, "OBSERVAT", "ScopeDesign Ray-Tracing Program",
+		 NULL, status);
+  fits_write_key(fitsfp, TSTRING, "TELESCOP", telname,
+		 "Modeled Telescope for Ray Trace", status);
+  fits_write_key(fitsfp, TSTRING, "FILENAME", fileout, NULL, status);
   
   /* Write array to file */
   fpixel[0] = 1;
@@ -79,14 +95,6 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
       break;
     }
   }
-  
-  /* Add/modify keyword for date modified 'DATE-MOD' & 'TIME-MOD' */
-  time(&now);
-  ptr = localtime(&now);
-  strftime(buf_date, FLEN_VALUE, "%Y-%m-%d", ptr);
-  strftime(buf_time, FLEN_VALUE, "%H:%M:%S", ptr);
-  fits_update_key(fitsfp, TSTRING, "DATE-MOD", buf_date, mod_comm, status);
-  fits_update_key(fitsfp, TSTRING, "TIME-MOD", buf_time, NULL, status);
   
   /* Clean up */
   fits_close_file(fitsfp, status);

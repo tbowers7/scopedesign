@@ -67,8 +67,7 @@ int setup_initialize_geometry(scope_scope *scope,         // Info about elements
   /* Variable Declarations */
   
   /* Initialize the Newtonian */
-  demo_newtonian(&scope->primary, &scope->secondary, elements, nelem);
-  
+  demo_newtonian(scope, elements, nelem);
   
   return 0;
 }
