@@ -32,7 +32,7 @@
 #include <time.h>                      // To update FITS headers
 
 /* Local headers */
-#include "fitswrap.h"
+#include "fitswrap.h"                  // Contains <fitsio.h> include
 #include "images.h"
 
 /***** Public-Facing Functions *****/
@@ -82,7 +82,7 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
   fits_write_key(fitsfp, TSTRING, "OBSERVAT", "ScopeDesign Ray-Tracing Program",
 		 NULL, status);
   fits_write_key(fitsfp, TSTRING, "TELESCOP", telname,
-		 "Modeled Telescope for Ray Trace", status);
+		 "modeled telescope for ray trace", status);
   fits_write_key(fitsfp, TSTRING, "FILENAME", fileout, NULL, status);
   
   /* Write array to file */
