@@ -3,7 +3,7 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * FILE: fitswrap.h
+ * FILE: fitsw.h
  * 
  * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
  *
@@ -23,8 +23,8 @@
  */
 
 
-#ifndef FITSWRAP_H
-#define FITSWRAP_H
+#ifndef FITSW_H
+#define FITSW_H
 
 #include <fitsio.h>             // CFITSIO
 
@@ -44,7 +44,7 @@ double  **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
 void      fitsw_write2file(char *fileout, long naxes[2], double **array, 
 			   int bitpix, char *telname, int *status);
 
-/***** Private Functions Internal to FitsWrap *****/
+/***** Private Functions Internal to Fitsw *****/
 
 fitsfile *fw_open_r(char *filename, int *status);
 fitsfile *fw_open_rw(char *filename, int *status);

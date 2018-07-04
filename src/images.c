@@ -35,7 +35,7 @@
 
 /* Local headers */
 #include "images.h"
-#include "fitswrap.h"
+#include "fitsw.h"
 
 /***** Array Allocation and Freeing Functions *****/
 
