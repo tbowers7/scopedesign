@@ -40,16 +40,19 @@
 /***** Array Allocation and Freeing Functions *****/
 
 /* Function to allocate space for a 2-D array of double */
+/* Note: This function is compatible with FITS standards,
+   which are COLUMN-MAJOR!  Therefore, indexing of the
+   output array goes: array[y][x]!!! */
 double **images_alloc_2darray(long *size){
-
+  
   /* Variable Declarations */
   int mm;
   double **new_array;
-
+  
   new_array = (double **)malloc(size[1] * sizeof(double *));
   for(mm=0; mm<size[1]; mm++)
     new_array[mm] = (double *)calloc(size[0], sizeof(double));
-
+  
   return new_array;
 }
 
@@ -58,10 +61,10 @@ double **images_alloc_2darray(long *size){
 void images_free_2darray(double **array, long *size){
   
   /* Variable Declarations */
-  int nn;
+  int mm;
 
-  for(nn=0; nn < size[1]; nn++)
-    free(array[nn]);
+  for(mm=0; mm < size[1]; mm++)
+    free(array[mm]);
   free(array);
     
   return;
@@ -70,47 +73,50 @@ void images_free_2darray(double **array, long *size){
 
 /***** High-Level Write-to-File Functions *****/
 
-
-
 /* Function (in progress) to write ray locations to a FITS file. */
 char *images_write_locations(scope_ray *rays, int location, char *telname,
 			     int *status){
   
   /* Variable Declarations */
-  int  errval, bitpix;
-  long i,j,k,nx,ny;
+  int  gsl_status, bitpix;
+  long i,j,nx,ny;
   char fn[256];
-  *status = 0;
+  
   
   /* Allocate 2-D Histogram to accumulate locations */
   /* NOTE: in the future, will need to pass in geometry descriptors... for now
      just work on test situation in main(). */
   
-  nx = 220;          // NBINS in the x direction
+  nx = 440;          // NBINS in the x direction
   ny = 220;          // NBINS in the y direction
   
   gsl_histogram2d *h = gsl_histogram2d_alloc(nx, ny);
-  long n_sq[2] = {nx,ny};
-  double **imarr = images_alloc_2darray(n_sq);
+  long naxes[2] = {nx,ny};
+  double **imarr = images_alloc_2darray(naxes);
   
   
   /* Set range for histogram */
-  gsl_histogram2d_set_ranges_uniform (h, 
-                                      -1.1, 1.1,
-                                      -1.1, 1.1);
+  gsl_histogram2d_set_ranges_uniform (h,           // NOTE: Need to
+                                      -2.2, 2.2,   // set these dynamically
+                                      -1.1, 1.1);  // based on situation
   
   /* Loop through rays and accumulate into bins */
   for(i=0;i<N_RAYS;i++){
-    errval = gsl_histogram2d_increment(h, rays[i].x, rays[i].y);
-    if(errval)
-      printf("We have an error, errno=%d\n",errval);
+    gsl_status = gsl_histogram2d_increment(h, rays[i].x, rays[i].y);
+    if(gsl_status)
+      printf("We have an error, errno=%d\n",gsl_status);
   }
   
   /* Convert 2-D Histogram into a standard array for writing to FITS */
   for(i=0;i<nx;i++)
     for(j=0;j<ny;j++)
-      imarr[i][j] = gsl_histogram2d_get(h, i, j);
+      imarr[j][i] = gsl_histogram2d_get(h, i, j);  // Column-Major IMAGE Array
   
+  /* All done with gsl_histogram, free it */
+  gsl_histogram2d_free(h);
+  
+  
+  /* We now have a (column-major) array ready for writing. */
   
   /* Use SWITCH statement to get correct filename to correspond with location */
   switch(location)
@@ -135,13 +141,9 @@ char *images_write_locations(scope_ray *rays, int location, char *telname,
   
   
   /* Write it out! */
-  
-  fitsw_write2file(fn, n_sq, imarr, bitpix, telname, status);
+  fitsw_write2file(fn, naxes, imarr, bitpix, telname, status);
   
   printf("In-function value of status: %d\n",*status);
-  
-  /* Clean up */
-  gsl_histogram2d_free(h);
   
   return strdup(fn);            // Return a properly malloc'd and sized string
 }
