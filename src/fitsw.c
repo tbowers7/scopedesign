@@ -46,7 +46,7 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
   /* Variable Declarations & Initializations */
   int k;
   long fpixel[2];
-  char buf_date[FLEN_VALUE],buf_time[FLEN_VALUE],*mod_comm,*fn;
+  char buf_date[FLEN_VALUE],buf_time[FLEN_VALUE],fn[FLEN_FILENAME];
   fitsfile *fitsfp;
   time_t now;
   struct tm *ptr;
@@ -55,13 +55,11 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
   *status = 0;
   
   
-  
   /* Open FITS file for writing, overwrite existing file */
-  fn = (char *)malloc(sizeof(char) * strlen(fileout)+1);
-  sprintf(fn,"!%s",fileout);     // CFITSIO will overwrite file prepended w/ "!"
+  snprintf(fn,FLEN_FILENAME, "!%s",fileout);
+                                 // CFITSIO will overwrite file prepended w/ "!"
   if( fits_create_file(&fitsfp, fn, status) )
     fw_catcherror(status);       // Send pointer not value
-  free(fn);                      // Free "!" filename
   
   /* Create image HDU */
   int naxis = 2;                 // Routine is specific for 2-D images
@@ -79,28 +77,28 @@ void fitsw_write2file(char *fileout, long naxes[2], double **array,
 		  "UT time of observation", status);
   
   /* Add various FITS keywords, specific to ScopeDesign */
-  fits_write_key(fitsfp, TSTRING, "OBSERVAT", "ScopeDesign Ray-Tracing Program",
-		 NULL, status);
+  fits_write_key(fitsfp, TSTRING, "OBSERVAT",
+		 "ScopeDesign Ray-Tracing Program", NULL, status);
   fits_write_key(fitsfp, TSTRING, "TELESCOP", telname,
 		 "modeled telescope for ray trace", status);
   fits_write_key(fitsfp, TSTRING, "FILENAME", fileout, NULL, status);
+  
+  /* Catch any CFITSIO errors from keyword writing */
+  fw_catcherror(status);    // Send pointer not value
   
   /* Write array to file */
   fpixel[0] = 1;
   for(k=0; k < naxes[1]; k++){       // Loop over size[1] rows (i.e. y)
     fpixel[1] = k + 1; 
-    if(fits_write_pix(fitsfp, TDOUBLE, fpixel, naxes[0], array[k], 
-  		      status)){
-      fits_report_error(stderr,*status);
+    if( fits_write_pix(fitsfp, TDOUBLE, fpixel,       // Use TDOUBLE because
+		       naxes[0], array[k], status) ){ // array is double
+      fw_catcherror(status);
       break;
     }
   }
   
   /* Clean up */
-  fits_close_file(fitsfp, status);
-  
-  /* Report any CFITSIO errors to stderr */
-  if(!*status)
+  if( fits_close_file(fitsfp, status) )
     fw_catcherror(status);    // Send pointer not value
   
   return;
@@ -167,8 +165,8 @@ double **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
   for(i=0; i < xysize[1]; i++){    // Loop over xysize[1] (i.e. y) rows
     fpixel[1] = ystart + i;        // Set initial y-coordinate here...
     
-    if(fits_read_pix(fitsfp, data_type, fpixel, xysize[0], NULL,
-		     array[i], NULL, status)){
+    if( fits_read_pix(fitsfp, data_type, fpixel, xysize[0], NULL,
+		      array[i], NULL, status)){
       fits_report_error(stderr,*status);
       break;
     }
@@ -176,7 +174,7 @@ double **fitsw_read2array(fitsfile *fitsfp, long xystart[2], long xysize[2],
   
   return array;
 }
-
+  
 
 /***** Private Functions Internal to Fitsw *****/
 

@@ -80,7 +80,7 @@ char *images_write_locations(scope_ray *rays, int location, char *telname,
   /* Variable Declarations */
   int  gsl_status, bitpix;
   long i,j,nx,ny;
-  char fn[256];
+  char fn[FLEN_FILENAME];            // CFITSIO max length of filename
   
   
   /* Allocate 2-D Histogram to accumulate locations */
