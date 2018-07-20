@@ -3,13 +3,13 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * Timothy P. Ellsworth Bowers
- * 
  * FILE: sd_defs.h
  * 
- * This program is free software; you can redistribute it and/or modify
+ * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
+ *
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -37,7 +36,7 @@
 # define HAVE__MAC   0
 # define HAVE__OTHER 0
 # define SD_SYS      50  // Linux
-#elif HAVE_SYSCTLBYNAME
+#elif HAVE_SYSCTL
 # define HAVE__LINUX 0
 # define HAVE__MAC   1
 # define HAVE__OTHER 0
@@ -169,6 +168,7 @@ typedef struct{
 
 // Telescope Structure for ScopeDesign Consumption
 typedef struct{
+  char        *name;        // Name of telescope design
   scope_optic primary;      // Provide space for 10 optical elements
   scope_optic secondary;    // 
   scope_optic tertiary;     // 

@@ -3,13 +3,13 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * Timothy P. Ellsworth Bowers
- *
  * FILE: init.c
  * 
- * This program is free software; you can redistribute it and/or modify
+ * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
+ *
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -54,13 +53,17 @@ int init_get_sysinfo(void){
   SYS_RAM = (double)s.totalram / 1024. / 1024.;  // in MB
   
 #elif HAVE__MAC
-  size_t size;
-  unsigned long long memsize;
-  sysctlbyname("HW_MEMSIZE", &memsize, &size, NULL, 0);
-  SYS_RAM = (double)memsize / 1024. / 1024.;   // In MB
+  int mib[2];
+  int64_t physical_memory;
+  size_t length;
+  mib[0] = CTL_HW;
+  mib[1] = HW_MEMSIZE;
+  length = sizeof(int64_t);
+  sysctl(mib, 2, &physical_memory, &length, NULL, 0);
+  SYS_RAM = (double)physical_memory / 1024. / 1024.;   // In MB
   
 #else
-  SYS_RAM = 0;
+  SYS_RAM = 0.;
   
 #endif
   

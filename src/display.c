@@ -3,13 +3,13 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * Timothy P. Ellsworth Bowers
- *
  * FILE: display.c
  * 
- * This program is free software; you can redistribute it and/or modify
+ * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
+ *
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -479,11 +478,17 @@ int display_splash(int input){
   switch(SD_SYS){
   case(50):
     sprintf(sd_systype," Linux");
-    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    if(SYS_RAM < 1024.)
+      sprintf(sd_memsize," with %dMB RAM",(int)floor(SYS_RAM));
+    else
+      sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
     break;
   case(51):
     sprintf(sd_systype," Mac");
-    sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
+    if(SYS_RAM < 1024.)
+      sprintf(sd_memsize," with %dMB RAM",(int)floor(SYS_RAM));
+    else
+      sprintf(sd_memsize," with %dGB RAM",(int)floor(SYS_RAM/1024.));
     break;
   case(52):
     sprintf(sd_systype,"n unrecognized");

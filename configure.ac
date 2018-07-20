@@ -60,7 +60,7 @@ AC_CHECK_TYPES([socklen_t], [], [], [#include <sys/socket.h>])
 dnl ScopeDesign requirements
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([sqrt strdup])
-AC_CHECK_FUNCS([sysinfo sysctlbyname])
+AC_CHECK_FUNCS([sysinfo sysctl])
 
 
 dnl LIBARGTABLE requirements

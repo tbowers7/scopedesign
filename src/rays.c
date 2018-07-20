@@ -3,13 +3,13 @@
  * A tool for determining the optical consequences of telescope design
  * through ray tracing and simulated focal planes.
  * 
- * Timothy P. Ellsworth Bowers
- *
  * FILE: rays.c
  * 
- * This program is free software; you can redistribute it and/or modify
+ * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
+ *
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -201,6 +200,7 @@ double raytrace_distroot(double t, void *params){
   
   /* Select proper optical surface, based on parameter passed */
   
+  /*
   switch(surf){
   case(OPTIC_PRI):
     z2 = primary_z(x1 + t*xa, y1 + t*ya, &geom);
@@ -211,7 +211,6 @@ double raytrace_distroot(double t, void *params){
   case(OPTIC_FP):
     z2 = focalplane_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
-    /*
   case(OPTIC_GRS):
     z2 = sph_grating_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
@@ -221,9 +220,10 @@ double raytrace_distroot(double t, void *params){
   case(OPTIC_SF):
     z2 = detector_z(x1 + t*xa, y1 + t*ya, &geom);
     break;
-    */
   }
-    
+  */
+  z2 = 0.;   // Temporary fix to eliminate compiler warnings (2/15/18)
+  
   /* Return condition on root */
   return z1 + t*za - z2;
 }
