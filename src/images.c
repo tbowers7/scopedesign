@@ -73,9 +73,9 @@ void images_free_2darray(double **array, long *size){
 
 /***** High-Level Write-to-File Functions *****/
 
-/* Function (in progress) to write ray locations to a FITS file. */
-char *images_write_locations(scope_ray *rays, int location, char *telname,
-			     int *status){
+/* Function (in progress) to write ray angles to a FITS file. */
+char *images_write_pos(scope_ray *rays, int location, char *telname,
+		       int *status){
   
   /* Variable Declarations */
   int  gsl_status, bitpix;
@@ -147,6 +147,83 @@ char *images_write_locations(scope_ray *rays, int location, char *telname,
   
   return strdup(fn);            // Return a properly malloc'd and sized string
 }
+
+
+/* Function (in progress) to write ray locations to a FITS file. */
+char *images_write_ang(scope_ray *rays, int location, char *telname,
+		       int *status){
+  
+  /* Variable Declarations */
+  int  gsl_status, bitpix;
+  long i,j,nx,ny;
+  char fn[FLEN_FILENAME];            // CFITSIO max length of filename
+  
+  
+  /* Allocate 2-D Histogram to accumulate locations */
+  /* NOTE: in the future, will need to pass in geometry descriptors... for now
+     just work on test situation in main(). */
+  
+  nx = 440;          // NBINS in the x direction
+  ny = 220;          // NBINS in the y direction
+  
+  gsl_histogram2d *h = gsl_histogram2d_alloc(nx, ny);
+  long naxes[2] = {nx,ny};
+  double **imarr = images_alloc_2darray(naxes);
+  
+  
+  /* Set range for histogram */
+  gsl_histogram2d_set_ranges_uniform (h,           // NOTE: Need to
+                                      -2.2, 2.2,   // set these dynamically
+                                      -1.1, 1.1);  // based on situation
+  
+  /* Loop through rays and accumulate into bins */
+  for(i=0;i<N_RAYS;i++){
+    gsl_status = gsl_histogram2d_increment(h, rays[i].x, rays[i].y);
+    if(gsl_status)
+      printf("We have an error, errno=%d\n",gsl_status);
+  }
+  
+  /* Convert 2-D Histogram into a standard array for writing to FITS */
+  for(i=0;i<nx;i++)
+    for(j=0;j<ny;j++)
+      imarr[j][i] = gsl_histogram2d_get(h, i, j);  // Column-Major IMAGE Array
+  
+  /* All done with gsl_histogram, free it */
+  gsl_histogram2d_free(h);
+  
+  
+  /* We now have a (column-major) array ready for writing. */
+  
+  /* Use SWITCH statement to get correct filename to correspond with location */
+  switch(location)
+    {
+    case OPTIC_INF:
+      sprintf(fn,"initial_angle.fits");
+      bitpix = ULONG_IMG;
+      break;
+    case OPTIC_PRI:
+      sprintf(fn,"primary_angle.fits");
+      bitpix = ULONG_IMG;
+      break;
+    case OPTIC_SEC:
+      sprintf(fn,"secondary_angle.fits");
+      bitpix = ULONG_IMG;
+      break;
+      
+      
+    default:
+      sprintf(fn,"test_data.fits");
+    }
+  
+  
+  /* Write it out! */
+  fitsw_write2file(fn, naxes, imarr, bitpix, telname, status);
+  
+  printf("In-function value of status: %d\n",*status);
+  
+  return strdup(fn);            // Return a properly malloc'd and sized string
+}
+
 
 
 

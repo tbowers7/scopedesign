@@ -34,8 +34,10 @@ double **images_alloc_2darray(long *);
 void     images_free_2darray(double **, long *);
 
 /***** High-Level Write-to-File Functions *****/
-char    *images_write_locations(scope_ray *rays, int location, char *telname,
-				int *status);
+char    *images_write_pos(scope_ray *rays, int location, char *telname,
+			  int *status);
+char    *images_write_ang(scope_ray *rays, int location, char *telname,
+			  int *status);
 
 /***** Other Left-Over Functions, Possibly to Use *****/
 int      write_focal_plane(char *);

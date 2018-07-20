@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   int           i,wfp_stat=0,ir_stat=0;               // Status variables
   scope_ray    *rays;
   double        over;
-  char         *fn_startpos;
+  char         *fn_startpos,*fn_startang;
   scope_display display_str;
   
   
@@ -143,12 +143,24 @@ int main(int argc, char *argv[])
   printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
 	 ir_stat,over,4./M_PI);
   
-  fn_startpos = images_write_locations(rays, OPTIC_INF, telescope.name,
-				       &wfp_stat);
+  /* Write out initial position and angles */
+  fn_startpos = images_write_pos(rays, OPTIC_INF, telescope.name,
+				 &wfp_stat);
   printf("File location and status: %s %d\n",fn_startpos, wfp_stat);
+  fn_startang = images_write_ang(rays, OPTIC_INF, telescope.name,
+				 &wfp_stat);
+  printf("File location and status: %s %d\n",fn_startang, wfp_stat);
   
+    
   /* Display ray starting location in the DS9 window */
   display_ds9_talk(DS9_GET, &display_str);
+  
+  
+  
+  /* Invent FOR loop here to loop through optical elements that
+     rays must interact with, extracted from the elements structure */
+  
+  
   
   
   
