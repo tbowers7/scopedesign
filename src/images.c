@@ -73,7 +73,7 @@ void images_free_2darray(double **array, long *size){
 
 /***** High-Level Write-to-File Functions *****/
 
-/* Function (in progress) to write ray angles to a FITS file. */
+/* Function (in progress) to write ray positions to a FITS file. */
 char *images_write_pos(scope_ray *rays, int location, char *telname,
 		       int *status){
   
@@ -149,7 +149,7 @@ char *images_write_pos(scope_ray *rays, int location, char *telname,
 }
 
 
-/* Function (in progress) to write ray locations to a FITS file. */
+/* Function (in progress) to write ray angles to a FITS file. */
 char *images_write_ang(scope_ray *rays, int location, char *telname,
 		       int *status){
   
@@ -163,7 +163,7 @@ char *images_write_ang(scope_ray *rays, int location, char *telname,
   /* NOTE: in the future, will need to pass in geometry descriptors... for now
      just work on test situation in main(). */
   
-  nx = 440;          // NBINS in the x direction
+  nx = 220;          // NBINS in the x direction
   ny = 220;          // NBINS in the y direction
   
   gsl_histogram2d *h = gsl_histogram2d_alloc(nx, ny);
@@ -173,12 +173,12 @@ char *images_write_ang(scope_ray *rays, int location, char *telname,
   
   /* Set range for histogram */
   gsl_histogram2d_set_ranges_uniform (h,           // NOTE: Need to
-                                      -2.2, 2.2,   // set these dynamically
+                                      -1.1, 1.1,   // set these dynamically
                                       -1.1, 1.1);  // based on situation
   
   /* Loop through rays and accumulate into bins */
   for(i=0;i<N_RAYS;i++){
-    gsl_status = gsl_histogram2d_increment(h, rays[i].x, rays[i].y);
+    gsl_status = gsl_histogram2d_increment(h, rays[i].vx, rays[i].vy);
     if(gsl_status)
       printf("We have an error, errno=%d\n",gsl_status);
   }
