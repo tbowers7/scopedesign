@@ -138,6 +138,35 @@ scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot){
 }
 
 
+
+/* Advance the rays function */
+int rays_advance(scope_ray *rays, scope_scope *scope,
+		 scope_element *elements, int this_elem){
+  
+  
+  printf("Within rays_advance, element #%d\n", this_elem);
+  
+  
+  /* Sequence of events here:
+     1. Determine geometry of next target surface
+     2. Root finder to determine distances
+     3. Advance Rays
+     4. Determine action (block, bounce, etc.)
+  */
+  
+  
+  
+  
+  
+  
+  return 0;  // Dummy status for now
+}
+
+
+
+/******************************/
+/* Old functions to be reused */
+
 double raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf){
   
   /* Variable declarations */

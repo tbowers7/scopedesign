@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 {
   
   /* Variable Declarations */
-  int           i,wfp_stat=0,ir_stat=0;               // Status variables
+  int           i,ii,wfp_stat=0,ir_stat=0,adv_stat;   // Status variables
   scope_ray    *rays;
   double        over;
   char         *fn_startpos,*fn_startang;
@@ -159,6 +159,9 @@ int main(int argc, char *argv[])
   
   /* Invent FOR loop here to loop through optical elements that
      rays must interact with, extracted from the elements structure */
+  for(ii=0; ii<nelem; ii++)
+    adv_stat = rays_advance(rays, &telescope, elements, ii);
+  
   
   
   

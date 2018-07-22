@@ -96,5 +96,10 @@ void demo_newtonian(scope_scope *telescope,
   elements[2].reflect = true;
   elements[2].refract = false;
   
+  int ii;
+  for(ii=0; ii<3; ii++)
+    printf("Demo element %d: %d\n", ii, elements[ii].elem);
+  
+  
   return;
 }

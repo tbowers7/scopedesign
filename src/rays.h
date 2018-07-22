@@ -28,6 +28,9 @@
 
 /* Function declarations */
 scope_ray *rays_initialize(int ray_setup, int *ray_status, double *overshoot);
+int        rays_advance(scope_ray *rays, scope_scope *scope, scope_element *elements, int this_elem);
+
+
 double     raytrace_free_distance(scope_ray ray, raytrace_geom geom, int surf);
 double     raytrace_distroot(double t, void *params);
 void       rays_advance_ray(scope_ray *beam, double d);
