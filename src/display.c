@@ -59,7 +59,7 @@ void *display_ds9_open(void *status){
   char *extant_ports[NXPA];
   char *token,*cp,*save;
   char command[100];
-  int nopen,good[NXPA];
+  int sstat,nopen,good[NXPA];
   bool verbose = true;
   char *ds9_filename,ds9_title[50];
   
@@ -108,7 +108,8 @@ void *display_ds9_open(void *status){
       /* Create the system command and send forth! */
       sprintf(ds9_title,"ScopeDesign_%d",ttyslot());                // Unique!
       sprintf(command,"%s -title %s -xpa yes &",DS9_PATH,ds9_title);
-      system(command);                  // Execute the command
+      sstat = system(command);                  // Execute the command
+                                                // Possibly check the return?
       
       /* Wait until the new window opens, then register its port information */
       do{
@@ -342,7 +343,7 @@ int display_ds9_xpa_set(scope_display *display, char *handle){
   xpa = XPAOpen(NULL);
   sprintf(template,"file %s/new-image.fits",DATADIR);
   
-  printf("%s (%d)",template,len);
+  printf("%s (%ld)",template,len);
   
   printf("Going to try to open %s\n",template);
   got = XPASet(xpa, ds9_port, template, NULL, buf, len,
@@ -351,7 +352,7 @@ int display_ds9_xpa_set(scope_display *display, char *handle){
   printf("Got = %d\n",got);
   /* error processing */
   for(i=0; i<got; i++){
-    printf("Names: %s, Messages: %s, Sent: %s, Len: %d\n",
+    printf("Names: %s, Messages: %s, Sent: %s, Len: %ld\n",
 	   names[i],messages[i],template,len);
     if( names[i] )    free(names[i]);
     if( messages[i] ) free(messages[i]);
@@ -492,7 +493,7 @@ int display_splash(int input){
     break;
   case(52):
     sprintf(sd_systype,"n unrecognized");
-    sprintf(sd_memsize,"");
+    sprintf(sd_memsize," ");
     break;
   }
   
@@ -519,7 +520,7 @@ int display_splash(int input){
   sprintf(text,"Written by Timothy Ellsworth Bowers");  // Line 2
   display_splash_text(text,line,screen_width);
   
-  sprintf(text,"");  // Line 3
+  sprintf(text," ");  // Line 3
   display_splash_text(text,line,screen_width);
   
   sprintf(text,"Running on a%s system%s",sd_systype,sd_memsize);  // Line 4

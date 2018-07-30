@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
      starting angles */
   rays = rays_initialize(TARGET_POINT, &ir_stat, &over);
   
-  printf("N_RAYS = %u\n",N_RAYS);
+  printf("N_RAYS = %lu\n",N_RAYS);
   
   
   printf("Ray status = %d, Overshoot = %0.3f, Theory = %0.3f\n",
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
   
   
   
-  printf("Memory check: scope_ray: %d, double: %d, int: %d, bool %d\n",
+  printf("Memory check: scope_ray: %ld, double: %ld, int: %ld, bool %ld\n",
 	 sizeof(scope_ray),sizeof(double),sizeof(int),sizeof(bool));
   printf("Rays: %0.3e\n",sizeof(scope_ray)*(double)N_RAYS);
   
