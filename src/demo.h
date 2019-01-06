@@ -5,7 +5,7 @@
  * 
  * FILE: demo.h
  * 
- * Copyright (C) 2016-2018  Timothy P. Ellsworth Bowers
+ * Copyright (C) 2016-2019  Timothy P. Ellsworth Bowers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
