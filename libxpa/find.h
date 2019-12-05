@@ -12,7 +12,7 @@
 #define	__find_h
 
 #if HAVE_CONFIG_H
-#include <config.h>
+#include <conf.h>
 #endif
 
 #include <stdio.h>

@@ -11,7 +11,7 @@
 #define	__xpap_h
 
 #if HAVE_CONFIG_H
-#include <config.h>
+#include <conf.h>
 #endif
 
 /* avoid use of system -- its not secure */
@@ -22,8 +22,14 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #if HAVE_STRING_H
 #include <string.h>
+#endif
+#if HAVE_STRINGS_H
+#include <strings.h>
 #endif
 #if HAVE_STDLIB_H
 #include <stdlib.h>
@@ -48,6 +54,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#if HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -179,7 +188,7 @@
 #define XPA_NSPORT	14285
 #define XPA_NSUNIX	"xpans_unix"
 #define XPA_RETRIES	10
-#define XPA_NSDELAY	150
+#define XPA_NSDELAY	300
 
 /* access control */
 #define XPA_ACLS	"gisa"

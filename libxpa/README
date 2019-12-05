@@ -1,4 +1,4 @@
-This directory contains the pieces of XPA Version 2.1.17 (Dec 15, 2016)
+This directory contains the pieces of XPA Version 2.1.19 (Mar 21, 2019)
 needed for use with ScopeDesign.  The Makefiles are modified (narrowed)
 for the purpose of being an included "convenience library" for this
 project.
