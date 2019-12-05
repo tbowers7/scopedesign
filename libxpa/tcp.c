@@ -8,7 +8,7 @@
  *
  */
 #if HAVE_CONFIG_H
-#include <conf.h>
+#include <config.h>
 #endif
 
 #if HAVE_UNISTD_H

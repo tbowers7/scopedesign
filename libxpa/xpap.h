@@ -11,7 +11,7 @@
 #define	__xpap_h
 
 #if HAVE_CONFIG_H
-#include <conf.h>
+#include <config.h>
 #endif
 
 /* avoid use of system -- its not secure */

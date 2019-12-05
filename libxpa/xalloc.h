@@ -12,7 +12,7 @@
 #define	__xalloc_h
 
 #if HAVE_CONFIG_H
-#include <conf.h>
+#include <config.h>
 #endif
 
 #include <sys/types.h>

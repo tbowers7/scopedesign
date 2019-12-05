@@ -12,7 +12,7 @@
 #define	__word_h
 
 #if HAVE_CONFIG_H
-#include <conf.h>
+#include <config.h>
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
