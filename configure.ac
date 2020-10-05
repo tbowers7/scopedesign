@@ -443,6 +443,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  libargtable/Makefile
                  libxpa/Makefile
+		 cexamples/Makefile
 		 data/Makefile])
 AC_OUTPUT
 

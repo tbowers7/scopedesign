@@ -1,6 +1,3 @@
-SUBDIRS = libargtable libxpa data src
-
-upload: $(DIST_ARCHIVES)
-	scp $(DIST_ARCHIVES) ellswotp@arlsrv2.colorado.edu:unpack/.
+SUBDIRS = cexamples data libargtable libxpa src
 
 $(DIST_ARCHIVES): dist

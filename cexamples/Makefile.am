@@ -1,0 +1,13 @@
+bin_PROGRAMS = imarith imstat modhead tabmerge imcopy listhead tabcalc tabselect fitscopy imlist liststruc tablist
+imarith_SOURCES   = imarith.c
+imstat_SOURCES    = imstat.c
+modhead_SOURCES   = modhead.c
+tabmerge_SOURCES  = tabmerge.c
+imcopy_SOURCES    = imcopy.c
+listhead_SOURCES  = listhead.c
+tabcalc_SOURCES   = tabcalc.c
+tabselect_SOURCES = tabselect.c
+fitscopy_SOURCES  = fitscopy.c
+imlist_SOURCES    = imlist.c
+liststruc_SOURCES = liststruc.c
+tablist_SOURCES   = tablist.c
